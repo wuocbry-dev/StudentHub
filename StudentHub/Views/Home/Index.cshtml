@@ -1,8 +1,46 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Trang chủ";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="home-hero">
+    <div class="row align-items-center g-5">
+        <div class="col-lg-7">
+            <span class="hero-badge">Student Information Management System</span>
+            <h1>Quản lý học tập<br /><span>nhanh chóng và hiệu quả</span></h1>
+            <p class="hero-description">SIMS kết nối sinh viên, giảng viên và nhà trường trên một nền tảng thống nhất, giúp theo dõi lớp học, lịch học và đăng ký môn học thuận tiện hơn.</p>
+            <div class="d-flex flex-wrap gap-3 mt-4">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <span class="btn btn-light btn-lg px-4">Xin chào, @User.Identity.Name</span>
+                    <form action="/TaiKhoan/DangXuat" method="post">@Html.AntiForgeryToken()<button class="btn btn-outline-light btn-lg px-4">Đăng xuất</button></form>
+                }
+                else
+                {
+                    <a asp-controller="TaiKhoan" asp-action="DangNhap" class="btn btn-light btn-lg px-4">Đăng nhập</a>
+                }
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="hero-panel">
+                <div class="hero-icon"><i class="bi bi-mortarboard-fill"></i></div>
+                <h2>Chào mừng đến với SIMS</h2>
+                <p>Sử dụng tài khoản do nhà trường cấp để truy cập các chức năng phù hợp với vai trò trong hệ thống.</p>
+                @if (User.Identity?.IsAuthenticated != true)
+                {
+                    <div class="d-grid gap-2 mt-4">
+                        <a asp-controller="TaiKhoan" asp-action="DangNhap" class="btn btn-primary">Đăng nhập hệ thống</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-features">
+    <div class="text-center mb-5"><div class="section-label">Nền tảng SIMS</div><h2>Mọi thông tin trong một hệ thống</h2></div>
+    <div class="row g-4">
+        <div class="col-md-4"><div class="feature-card"><i class="bi bi-calendar3"></i><h3>Lịch học rõ ràng</h3><p>Theo dõi lịch học, phòng học và thời gian học tập thuận tiện.</p></div></div>
+        <div class="col-md-4"><div class="feature-card"><i class="bi bi-journal-check"></i><h3>Đăng ký môn học</h3><p>Quản lý lớp học và trạng thái đăng ký tập trung, chính xác.</p></div></div>
+        <div class="col-md-4"><div class="feature-card"><i class="bi bi-bar-chart"></i><h3>Dữ liệu trực quan</h3><p>Dashboard giúp nhà trường theo dõi số liệu đào tạo nhanh chóng.</p></div></div>
+    </div>
+</section>

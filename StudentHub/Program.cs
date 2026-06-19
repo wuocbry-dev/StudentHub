@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using StudentHub.Data;
+
 namespace StudentHub
 {
     public class Program
@@ -8,6 +12,22 @@ namespace StudentHub
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<SimsDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("SimsConnection")));
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromHours(8);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/TaiKhoan/DangNhap";
+                    options.AccessDeniedPath = "/TaiKhoan/TuChoiTruyCap";
+                    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+                });
 
             var app = builder.Build();
 
@@ -23,8 +43,18 @@ namespace StudentHub
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseSession();
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            app.MapControllerRoute(
+                name: "admin-home",
+                pattern: "Admin/Home/{action=Index}/{id?}",
+                defaults: new { controller = "Dashboard" });
+
+            app.MapControllerRoute(
+                name: "admin",
+                pattern: "Admin/{controller=Dashboard}/{action=Index}/{id?}");
 
             app.MapControllerRoute(
                 name: "default",

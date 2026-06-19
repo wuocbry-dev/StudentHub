@@ -15,7 +15,9 @@ namespace StudentHub.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return User.Identity?.IsAuthenticated == true && User.IsInRole("Admin")
+                ? Redirect("/Admin/Dashboard")
+                : View();
         }
 
         public IActionResult Privacy()

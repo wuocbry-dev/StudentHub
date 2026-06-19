@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - SIMS Admin</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+</head>
+<body>
+    <aside class="admin-sidebar" id="sidebar">
+        <a class="brand" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-mortarboard-fill"></i> SIMS</a>
+        <div class="small text-uppercase text-white-50 px-3 mt-3 mb-2">Quản trị hệ thống</div>
+        <nav class="nav flex-column">
+            <a class="nav-link" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-grid"></i> Dashboard</a>
+            <a class="nav-link" asp-controller="Khoa" asp-action="Index"><i class="bi bi-building"></i> Khoa</a>
+            <a class="nav-link" asp-controller="SinhVien" asp-action="Index"><i class="bi bi-people"></i> Sinh viên</a>
+            <a class="nav-link" asp-controller="GiangVien" asp-action="Index"><i class="bi bi-person-workspace"></i> Giảng viên</a>
+            <a class="nav-link" asp-controller="MonHoc" asp-action="Index"><i class="bi bi-book"></i> Môn học</a>
+            <a class="nav-link" asp-controller="PhongHoc" asp-action="Index"><i class="bi bi-door-open"></i> Phòng học</a>
+            <a class="nav-link" asp-controller="LopHoc" asp-action="Index"><i class="bi bi-journal-text"></i> Lớp học</a>
+            <a class="nav-link" asp-controller="LichHoc" asp-action="Index"><i class="bi bi-calendar3"></i> Lịch học</a>
+            <a class="nav-link" asp-controller="DangKyHoc" asp-action="Index"><i class="bi bi-clipboard-check"></i> Đăng ký học</a>
+            <a class="nav-link" asp-controller="TaiKhoan" asp-action="Index"><i class="bi bi-shield-lock"></i> Tài khoản</a>
+        </nav>
+    </aside>
+    <main class="admin-main">
+        <nav class="navbar navbar-expand bg-white border-bottom sticky-top px-3">
+            <button class="btn btn-light d-lg-none" id="sidebarToggle"><i class="bi bi-list"></i></button>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <span><i class="bi bi-person-circle me-1"></i> @User.Identity?.Name</span>
+                <form action="/TaiKhoan/DangXuat" method="post">@Html.AntiForgeryToken()<button class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button></form>
+            </div>
+        </nav>
+        <div class="container-fluid p-3 p-lg-4">
+            @if (TempData["Success"] != null) { <div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>@TempData["Success"]<button class="btn-close" data-bs-dismiss="alert"></button></div> }
+            @RenderBody()
+        </div>
+    </main>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/admin.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
