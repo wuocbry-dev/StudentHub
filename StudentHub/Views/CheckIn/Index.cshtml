@@ -1,0 +1,6 @@
+@model CheckInViewModel
+@{ ViewData["Title"] = "Điểm danh"; Layout = null; }
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Điểm danh - SIMS</title><link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"><link rel="stylesheet" href="~/css/giangvien.css" asp-append-version="true"></head><body class="checkin-page"><div class="checkin-card card border-0 shadow-lg"><div class="card-body p-4 p-md-5 text-center"><div class="checkin-logo">SIMS</div><h1 class="h4 mt-3">Điểm danh lớp học</h1><p class="text-muted">Xin chào, @User.Identity?.Name</p>
+@if(Model.ThongBao != null){<div class="alert @(Model.ThanhCong ? "alert-success" : "alert-danger")">@Model.ThongBao</div>}
+@if(!Model.ThanhCong){<form method="post" class="text-start"><input asp-for="Token" type="hidden"><div class="mb-3"><label asp-for="MaPhien" class="form-label">Mã phiên 6 ký tự</label><input asp-for="MaPhien" class="form-control form-control-lg text-uppercase text-center session-input" placeholder="ABC123" maxlength="6"><span asp-validation-for="MaPhien" class="text-danger"></span></div><button class="btn btn-primary btn-lg w-100">Xác nhận điểm danh</button></form>}
+<a href="/" class="btn btn-link mt-3">Về trang chủ</a></div></div><partial name="_ValidationScriptsPartial" /></body></html>

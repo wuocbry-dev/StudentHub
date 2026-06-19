@@ -12,6 +12,8 @@
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     <span class="btn btn-light btn-lg px-4">Xin chào, @User.Identity.Name</span>
+                    @if(User.IsInRole("GiangVien")){<a href="/GiangVien/Dashboard" class="btn btn-outline-light btn-lg px-4">Vào cổng giảng viên</a>}
+                    @if(User.IsInRole("SinhVien")){<a href="/CheckIn" class="btn btn-outline-light btn-lg px-4">Điểm danh</a>}
                     <form action="/TaiKhoan/DangXuat" method="post">@Html.AntiForgeryToken()<button class="btn btn-outline-light btn-lg px-4">Đăng xuất</button></form>
                 }
                 else

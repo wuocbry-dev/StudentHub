@@ -1,0 +1,4 @@
+@model List<LopHoc>
+@{ Layout = "~/Views/GiangVien/_GiangVienLayout.cshtml"; ViewData["Title"] = "Quản lý điểm"; }
+<div class="mb-4"><h1 class="h3 mb-1">Quản lý điểm</h1><p class="text-muted mb-0">Chọn lớp để nhập và theo dõi điểm sinh viên</p></div>
+<div class="row g-4">@if(!Model.Any()){<div class="col-12"><div class="card border-0 shadow-sm"><div class="card-body text-center text-muted py-5">Chưa có lớp được phân công.</div></div></div>}else{@foreach(var x in Model){<div class="col-md-6 col-xl-4"><div class="card class-card border-0 shadow-sm h-100"><div class="card-body"><span class="badge text-bg-primary mb-3">@x.MaLop</span><h2 class="h5">@x.TenLop</h2><p class="text-muted">@x.MonHoc?.MaMonHoc - @x.MonHoc?.TenMonHoc</p><div class="small mb-3">@x.HocKy - @x.NamHoc</div><a href="/GiangVien/QuanLyDiem/Lop/@x.Id" class="btn btn-outline-primary w-100">Mở bảng điểm</a></div></div></div>}}</div>

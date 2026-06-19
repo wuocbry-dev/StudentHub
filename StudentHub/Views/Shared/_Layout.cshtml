@@ -20,6 +20,8 @@
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             @if (User.IsInRole("Admin")) { <li class="nav-item"><a class="btn btn-primary" href="/Admin/Dashboard">Trang quản trị</a></li> }
+                            @if (User.IsInRole("GiangVien")) { <li class="nav-item"><a class="btn btn-primary" href="/GiangVien/Dashboard">Cổng giảng viên</a></li> }
+                            @if (User.IsInRole("SinhVien")) { <li class="nav-item"><a class="btn btn-primary" href="/CheckIn">Điểm danh</a></li> }
                         }
                         else
                         {

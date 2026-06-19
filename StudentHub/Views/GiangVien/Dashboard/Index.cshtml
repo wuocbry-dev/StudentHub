@@ -1,0 +1,15 @@
+@model GiangVienDashboardViewModel
+@{ Layout = "~/Views/GiangVien/_GiangVienLayout.cshtml"; ViewData["Title"] = "Dashboard"; }
+<div class="mb-4"><h1 class="h3 mb-1">Tổng quan giảng dạy</h1><p class="text-muted mb-0">Theo dõi lớp học và tình hình chuyên cần</p></div>
+<div class="row g-3 mb-4">
+    @foreach(var card in new[]{("Lớp đang dạy",Model.TongLop.ToString(),"bi-journal-text","primary"),("Sinh viên",Model.TongSinhVien.ToString(),"bi-people","success"),("Buổi điểm danh",Model.TongPhienDiemDanh.ToString(),"bi-qr-code-scan","warning"),("Chuyên cần",Model.TyLeChuyenCan.ToString("0.0")+"%","bi-graph-up-arrow","info")}){
+    <div class="col-sm-6 col-xl-3"><div class="stat-card"><div class="stat-icon bg-@card.Item4-subtle text-@card.Item4"><i class="bi @card.Item3"></i></div><div><div class="text-muted small">@card.Item1</div><div class="fs-3 fw-bold">@card.Item2</div></div></div></div>}
+</div>
+<div class="row g-4">
+    <div class="col-xl-7"><div class="card border-0 shadow-sm h-100"><div class="card-header bg-white py-3 fw-semibold"><i class="bi bi-calendar-day me-2 text-primary"></i>Lớp hôm nay</div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Thời gian</th><th>Lớp</th><th>Môn học</th><th>Phòng</th></tr></thead><tbody>
+    @if(!Model.LopHomNay.Any()){<tr><td colspan="4" class="text-center text-muted py-5">Không có lịch dạy hôm nay.</td></tr>}else{@foreach(var x in Model.LopHomNay){<tr><td>@x.GioBatDau.ToString(@"hh\:mm") - @x.GioKetThuc.ToString(@"hh\:mm")</td><td><a href="/GiangVien/LopCuaToi/ChiTiet/@x.LopHocId">@x.LopHoc?.MaLop</a></td><td>@x.LopHoc?.MonHoc?.TenMonHoc</td><td>@x.PhongHoc?.MaPhong</td></tr>}}
+    </tbody></table></div></div></div>
+    <div class="col-xl-5"><div class="card border-0 shadow-sm h-100"><div class="card-header bg-white py-3 fw-semibold"><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Lớp có tỷ lệ vắng cao</div><div class="list-group list-group-flush">
+    @if(!Model.LopVangNhieu.Any()){<div class="text-center text-muted py-5">Chưa có dữ liệu điểm danh.</div>}else{@foreach(var x in Model.LopVangNhieu){<a href="/GiangVien/LopCuaToi/ChiTiet/@x.LopHoc.Id" class="list-group-item list-group-item-action py-3"><div class="d-flex justify-content-between"><strong>@x.LopHoc.MaLop - @x.LopHoc.TenLop</strong><span class="badge text-bg-danger">@x.TyLeVang.ToString("0.0")%</span></div><small class="text-muted">@x.LuotVang lượt vắng</small></a>}}
+    </div></div></div>
+</div>
