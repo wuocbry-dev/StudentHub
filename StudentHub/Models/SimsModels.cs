@@ -10,7 +10,6 @@ public enum GioiTinh { Nam, Nu, Khac }
 public enum TrangThaiLopHoc { SapMo, DangHoc, DaKetThuc, DaHuy }
 public enum TrangThaiDangKy { ChoDuyet, DaDuyet, DaHuy }
 public enum TrangThaiDiemDanh { CoMat, DiMuon, Vang, CoPhep }
-public enum XepLoaiDiem { ChuaXepLoai, XuatSac, Gioi, Kha, TrungBinh, Yeu, Kem }
 
 public class TaiKhoan
 {
@@ -154,15 +153,18 @@ public class DiemDanh
     [StringLength(500)] public string? GhiChu { get; set; }
 }
 
-public class Diem
+public class BangDiem
 {
     public int Id { get; set; }
-    [Required] public int DangKyHocId { get; set; }
-    public DangKyHoc? DangKyHoc { get; set; }
+    [Required] public int SinhVienId { get; set; }
+    public SinhVien? SinhVien { get; set; }
+    [Required] public int LopHocId { get; set; }
+    public LopHoc? LopHoc { get; set; }
     [Range(0, 10)] public decimal? DiemChuyenCan { get; set; }
+    [Range(0, 10)] public decimal? DiemBaiTap { get; set; }
     [Range(0, 10)] public decimal? DiemGiuaKy { get; set; }
     [Range(0, 10)] public decimal? DiemCuoiKy { get; set; }
     [Range(0, 10)] public decimal? DiemTongKet { get; set; }
-    public XepLoaiDiem XepLoai { get; set; } = XepLoaiDiem.ChuaXepLoai;
+    [StringLength(1)] public string? DiemChu { get; set; }
     public DateTime NgayCapNhat { get; set; } = DateTime.Now;
 }
