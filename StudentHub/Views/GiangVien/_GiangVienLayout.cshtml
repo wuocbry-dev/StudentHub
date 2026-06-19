@@ -6,6 +6,7 @@
     <title>@ViewData["Title"] - SIMS Giảng viên</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.bootstrap5.min.css" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/giangvien.css" asp-append-version="true" />
 </head>
@@ -16,8 +17,8 @@
         <nav class="nav flex-column">
             <a class="nav-link" href="/GiangVien/Dashboard"><i class="bi bi-grid"></i> Dashboard</a>
             <a class="nav-link" href="/GiangVien/LopCuaToi"><i class="bi bi-journal-text"></i> Lớp của tôi</a>
-            <a class="nav-link" href="/GiangVien/PhienDiemDanh"><i class="bi bi-qr-code-scan"></i> Phiên điểm danh</a>
-            <a class="nav-link" href="/GiangVien/QuanLyDiem"><i class="bi bi-clipboard-data"></i> Quản lý điểm</a>
+            <a class="nav-link" href="/GiangVien/PhienDiemDanh"><i class="bi bi-qr-code-scan"></i> Điểm danh</a>
+            <a class="nav-link" href="/GiangVien/QuanLyDiem"><i class="bi bi-clipboard-data"></i> Bảng điểm</a>
         </nav>
     </aside>
     <main class="admin-main">
@@ -30,13 +31,16 @@
             </div>
         </nav>
         <div class="container-fluid p-3 p-lg-4">
-            @if (TempData["Success"] != null) { <div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>@TempData["Success"]<button class="btn-close" data-bs-dismiss="alert"></button></div> }
-            @if (TempData["Error"] != null) { <div class="alert alert-danger alert-dismissible fade show"><i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]<button class="btn-close" data-bs-dismiss="alert"></button></div> }
             @RenderBody()
         </div>
     </main>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/js/giangvien.js" asp-append-version="true"></script>
+    <script>showLecturerFlash(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["Success"])), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["Error"])));</script>
     @await RenderSectionAsync("Scripts", false)
 </body>
 </html>
