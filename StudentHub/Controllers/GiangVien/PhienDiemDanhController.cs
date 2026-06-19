@@ -89,6 +89,27 @@ public class PhienDiemDanhController(SimsDbContext db) : GiangVienPortalControll
         });
     }
 
+    [HttpGet("TrangThai/{id:int}")]
+    public async Task<IActionResult> TrangThai(int id)
+    {
+        var giangVienId = await GetGiangVienId();
+        var phien = await Db.PhienDiemDanh.SingleOrDefaultAsync(x => x.Id == id);
+        if (giangVienId == null || phien == null || phien.GiangVienId != giangVienId) return Forbid();
+        if (phien.DangMo && phien.NgayDiemDanh.Date + phien.GioKetThuc <= DateTime.Now)
+        {
+            phien.DangMo = false;
+            await Db.SaveChangesAsync();
+        }
+        var danhSach = await Db.DiemDanh.Where(x => x.PhienDiemDanhId == id).Select(x => new
+        {
+            x.Id,
+            TrangThai = x.TrangThai.ToString(),
+            ThoiGianCheckIn = x.ThoiGianCheckIn.HasValue ? x.ThoiGianCheckIn.Value.ToString("dd/MM/yyyy HH:mm") : "-",
+            x.GhiChu
+        }).ToListAsync();
+        return Json(new { phien.DangMo, ServerNowUnixMs = DateTimeOffset.Now.ToUnixTimeMilliseconds(), DanhSach = danhSach });
+    }
+
     [HttpPost("DoiTrangThai/{id:int}"), ValidateAntiForgeryToken]
     public async Task<IActionResult> DoiTrangThai(int id)
     {

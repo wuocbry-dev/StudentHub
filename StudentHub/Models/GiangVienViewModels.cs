@@ -84,12 +84,13 @@ public class QuanLyDiemViewModel
 
 public class DiemSinhVienViewModel
 {
-    public int DangKyHocId { get; set; }
+    public int SinhVienId { get; set; }
     public string MaSinhVien { get; set; } = "";
     public string HoTen { get; set; } = "";
     public decimal? DiemChuyenCan { get; set; }
+    public decimal? DiemBaiTap { get; set; }
     public decimal? DiemGiuaKy { get; set; }
     public decimal? DiemCuoiKy { get; set; }
     public decimal? DiemTongKet { get; set; }
-    public XepLoaiDiem XepLoai { get; set; }
+    public string? DiemChu { get; set; }
 }

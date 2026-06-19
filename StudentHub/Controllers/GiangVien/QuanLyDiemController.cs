@@ -13,90 +13,128 @@ public class QuanLyDiemController(SimsDbContext db) : GiangVienPortalController(
     {
         var giangVienId = await GetGiangVienId();
         if (giangVienId == null) return View("~/Views/GiangVien/Shared/ChuaLienKet.cshtml");
-        var lop = await Db.LopHoc.Include(x => x.MonHoc).Where(x => x.GiangVienId == giangVienId).OrderByDescending(x => x.Id).ToListAsync();
+        var lop = await Db.LopHoc.Include(x => x.MonHoc).Where(x => x.GiangVienId == giangVienId)
+            .OrderByDescending(x => x.Id).ToListAsync();
         return View("~/Views/GiangVien/QuanLyDiem/Index.cshtml", lop);
     }
 
     [HttpGet("Lop/{lopHocId:int}")]
-    public async Task<IActionResult> Lop(int lopHocId, string search = "")
+    public async Task<IActionResult> Lop(int lopHocId)
     {
         var giangVienId = await GetGiangVienId();
         if (giangVienId == null || !await SoHuuLop(lopHocId, giangVienId.Value)) return Forbid();
+
         var lop = await Db.LopHoc.Include(x => x.MonHoc).SingleAsync(x => x.Id == lopHocId);
-        var query = Db.DangKyHoc.Include(x => x.SinhVien).Include(x => x.LopHoc)
-            .Where(x => x.LopHocId == lopHocId && x.TrangThai != TrangThaiDangKy.DaHuy);
-        if (!string.IsNullOrWhiteSpace(search)) query = query.Where(x => x.SinhVien!.MaSinhVien.Contains(search) || x.SinhVien.HoTen.Contains(search));
-        var dangKy = await query.OrderBy(x => x.SinhVien!.MaSinhVien).ToListAsync();
-        var dangKyIds = dangKy.Select(x => x.Id).ToList();
-        var bangDiem = await Db.Diem.Where(x => dangKyIds.Contains(x.DangKyHocId)).ToDictionaryAsync(x => x.DangKyHocId);
-        var rows = dangKy.Select(x =>
+        var sinhVien = await Db.DangKyHoc.Include(x => x.SinhVien)
+            .Where(x => x.LopHocId == lopHocId && x.TrangThai != TrangThaiDangKy.DaHuy)
+            .OrderBy(x => x.SinhVien!.MaSinhVien).ToListAsync();
+        var sinhVienIds = sinhVien.Select(x => x.SinhVienId).ToList();
+        var bangDiem = await Db.BangDiem.Where(x => x.LopHocId == lopHocId && sinhVienIds.Contains(x.SinhVienId))
+            .ToDictionaryAsync(x => x.SinhVienId);
+        var rows = sinhVien.Select(x =>
         {
-            bangDiem.TryGetValue(x.Id, out var diem);
+            bangDiem.TryGetValue(x.SinhVienId, out var diem);
             return new DiemSinhVienViewModel
             {
-                DangKyHocId = x.Id, MaSinhVien = x.SinhVien!.MaSinhVien, HoTen = x.SinhVien.HoTen,
-                DiemChuyenCan = diem?.DiemChuyenCan, DiemGiuaKy = diem?.DiemGiuaKy, DiemCuoiKy = diem?.DiemCuoiKy,
-                DiemTongKet = diem?.DiemTongKet, XepLoai = diem?.XepLoai ?? XepLoaiDiem.ChuaXepLoai
+                SinhVienId = x.SinhVienId,
+                MaSinhVien = x.SinhVien!.MaSinhVien,
+                HoTen = x.SinhVien.HoTen,
+                DiemChuyenCan = diem?.DiemChuyenCan,
+                DiemBaiTap = diem?.DiemBaiTap,
+                DiemGiuaKy = diem?.DiemGiuaKy,
+                DiemCuoiKy = diem?.DiemCuoiKy,
+                DiemTongKet = diem?.DiemTongKet,
+                DiemChu = diem?.DiemChu
             };
         }).ToList();
-        return View("~/Views/GiangVien/QuanLyDiem/Lop.cshtml", new QuanLyDiemViewModel { LopHoc = lop, DanhSach = rows, Search = search });
+        return View("~/Views/GiangVien/QuanLyDiem/Lop.cshtml", new QuanLyDiemViewModel { LopHoc = lop, DanhSach = rows });
     }
 
     [HttpPost("Luu"), ValidateAntiForgeryToken]
-    public async Task<IActionResult> Luu(int lopHocId, int dangKyHocId, decimal? diemChuyenCan, decimal? diemGiuaKy, decimal? diemCuoiKy)
+    public async Task<IActionResult> Luu(int lopHocId, int sinhVienId, decimal? diemChuyenCan,
+        decimal? diemBaiTap, decimal? diemGiuaKy, decimal? diemCuoiKy)
     {
         var giangVienId = await GetGiangVienId();
         if (giangVienId == null || !await SoHuuLop(lopHocId, giangVienId.Value)) return Forbid();
-        var dangKy = await Db.DangKyHoc.SingleOrDefaultAsync(x => x.Id == dangKyHocId && x.LopHocId == lopHocId);
-        if (dangKy == null) return NotFound();
-        if (!HopLe(diemChuyenCan) || !HopLe(diemGiuaKy) || !HopLe(diemCuoiKy))
+        var thuocLop = await Db.DangKyHoc.AnyAsync(x => x.LopHocId == lopHocId && x.SinhVienId == sinhVienId && x.TrangThai != TrangThaiDangKy.DaHuy);
+        if (!thuocLop) return NotFound();
+        if (new[] { diemChuyenCan, diemBaiTap, diemGiuaKy, diemCuoiKy }.Any(x => !HopLe(x)))
         {
             TempData["Error"] = "Điểm phải nằm trong khoảng từ 0 đến 10.";
             return RedirectToAction(nameof(Lop), new { lopHocId });
         }
-        var diem = await Db.Diem.SingleOrDefaultAsync(x => x.DangKyHocId == dangKyHocId) ?? new Diem { DangKyHocId = dangKyHocId };
-        diem.DiemChuyenCan = diemChuyenCan; diem.DiemGiuaKy = diemGiuaKy; diem.DiemCuoiKy = diemCuoiKy;
+
+        var diem = await Db.BangDiem.SingleOrDefaultAsync(x => x.SinhVienId == sinhVienId && x.LopHocId == lopHocId)
+            ?? new BangDiem { SinhVienId = sinhVienId, LopHocId = lopHocId };
+        diem.DiemChuyenCan = diemChuyenCan;
+        diem.DiemBaiTap = diemBaiTap;
+        diem.DiemGiuaKy = diemGiuaKy;
+        diem.DiemCuoiKy = diemCuoiKy;
         TinhTongKet(diem);
         diem.NgayCapNhat = DateTime.Now;
-        if (diem.Id == 0) Db.Diem.Add(diem);
+        if (diem.Id == 0) Db.BangDiem.Add(diem);
         await Db.SaveChangesAsync();
-        TempData["Success"] = $"Đã lưu điểm cho sinh viên.";
+        TempData["Success"] = "Đã lưu và tính lại điểm sinh viên.";
         return RedirectToAction(nameof(Lop), new { lopHocId });
     }
 
-    [HttpPost("DongBoChuyenCan"), ValidateAntiForgeryToken]
-    public async Task<IActionResult> DongBoChuyenCan(int lopHocId)
+    [HttpPost("TinhLaiDiemChuyenCan"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> TinhLaiDiemChuyenCan(int lopHocId)
     {
         var giangVienId = await GetGiangVienId();
         if (giangVienId == null || !await SoHuuLop(lopHocId, giangVienId.Value)) return Forbid();
-        var dangKy = await Db.DangKyHoc.Where(x => x.LopHocId == lopHocId && x.TrangThai != TrangThaiDangKy.DaHuy).ToListAsync();
-        var tongBuoi = await Db.PhienDiemDanh.CountAsync(x => x.LopHocId == lopHocId);
-        foreach (var dk in dangKy)
+        var sinhVienIds = await Db.DangKyHoc
+            .Where(x => x.LopHocId == lopHocId && x.TrangThai != TrangThaiDangKy.DaHuy)
+            .Select(x => x.SinhVienId).ToListAsync();
+        var diemDanh = await Db.DiemDanh
+            .Where(x => x.PhienDiemDanh!.LopHocId == lopHocId && sinhVienIds.Contains(x.SinhVienId))
+            .Select(x => new { x.SinhVienId, x.TrangThai }).ToListAsync();
+        var bangDiem = await Db.BangDiem.Where(x => x.LopHocId == lopHocId && sinhVienIds.Contains(x.SinhVienId))
+            .ToDictionaryAsync(x => x.SinhVienId);
+
+        foreach (var sinhVienId in sinhVienIds)
         {
-            var diem = await Db.Diem.SingleOrDefaultAsync(x => x.DangKyHocId == dk.Id) ?? new Diem { DangKyHocId = dk.Id };
-            var dat = await Db.DiemDanh.CountAsync(x => x.SinhVienId == dk.SinhVienId && x.PhienDiemDanh!.LopHocId == lopHocId && (x.TrangThai == TrangThaiDiemDanh.CoMat || x.TrangThai == TrangThaiDiemDanh.DiMuon));
-            diem.DiemChuyenCan = tongBuoi == 0 ? null : Math.Round(dat * 10m / tongBuoi, 2);
-            TinhTongKet(diem); diem.NgayCapNhat = DateTime.Now;
-            if (diem.Id == 0) Db.Diem.Add(diem);
+            var lichSu = diemDanh.Where(x => x.SinhVienId == sinhVienId).ToList();
+            var tongBatBuoc = lichSu.Count(x => x.TrangThai != TrangThaiDiemDanh.CoPhep);
+            var buoiDat = lichSu.Sum(x => x.TrangThai switch
+            {
+                TrangThaiDiemDanh.CoMat => 1m,
+                TrangThaiDiemDanh.DiMuon => 0.5m,
+                _ => 0m
+            });
+            if (!bangDiem.TryGetValue(sinhVienId, out var diem))
+            {
+                diem = new BangDiem { SinhVienId = sinhVienId, LopHocId = lopHocId };
+                Db.BangDiem.Add(diem);
+            }
+            diem.DiemChuyenCan = tongBatBuoc == 0 ? null : Math.Round(buoiDat * 10m / tongBatBuoc, 2);
+            TinhTongKet(diem);
+            diem.NgayCapNhat = DateTime.Now;
         }
         await Db.SaveChangesAsync();
-        TempData["Success"] = "Đã đồng bộ điểm chuyên cần từ dữ liệu điểm danh.";
+        TempData["Success"] = "Đã tính lại điểm chuyên cần cho toàn bộ sinh viên trong lớp.";
         return RedirectToAction(nameof(Lop), new { lopHocId });
     }
 
     private static bool HopLe(decimal? value) => value is null or >= 0 and <= 10;
 
-    private static void TinhTongKet(Diem diem)
+    private static void TinhTongKet(BangDiem diem)
     {
-        if (diem.DiemChuyenCan == null || diem.DiemGiuaKy == null || diem.DiemCuoiKy == null)
+        if (diem.DiemChuyenCan == null || diem.DiemBaiTap == null || diem.DiemGiuaKy == null || diem.DiemCuoiKy == null)
         {
-            diem.DiemTongKet = null; diem.XepLoai = XepLoaiDiem.ChuaXepLoai; return;
+            diem.DiemTongKet = null;
+            diem.DiemChu = null;
+            return;
         }
-        diem.DiemTongKet = Math.Round(diem.DiemChuyenCan.Value * 0.1m + diem.DiemGiuaKy.Value * 0.3m + diem.DiemCuoiKy.Value * 0.6m, 2);
-        diem.XepLoai = diem.DiemTongKet.Value switch
+        diem.DiemTongKet = Math.Round(diem.DiemChuyenCan.Value * 0.1m + diem.DiemBaiTap.Value * 0.2m
+            + diem.DiemGiuaKy.Value * 0.3m + diem.DiemCuoiKy.Value * 0.4m, 2);
+        diem.DiemChu = diem.DiemTongKet.Value switch
         {
-            >= 9 => XepLoaiDiem.XuatSac, >= 8 => XepLoaiDiem.Gioi, >= 7 => XepLoaiDiem.Kha,
-            >= 5 => XepLoaiDiem.TrungBinh, >= 4 => XepLoaiDiem.Yeu, _ => XepLoaiDiem.Kem
+            >= 8.5m => "A",
+            >= 7m => "B",
+            >= 5.5m => "C",
+            >= 4m => "D",
+            _ => "F"
         };
     }
 }

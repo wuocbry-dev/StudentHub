@@ -42,7 +42,10 @@ public class LopCuaToiController(SimsDbContext db) : GiangVienPortalController(d
             DiMuon = Db.DiemDanh.Count(d => d.SinhVienId == x.SinhVienId && d.PhienDiemDanh!.LopHocId == id && d.TrangThai == TrangThaiDiemDanh.DiMuon),
             Vang = Db.DiemDanh.Count(d => d.SinhVienId == x.SinhVienId && d.PhienDiemDanh!.LopHocId == id && d.TrangThai == TrangThaiDiemDanh.Vang),
             CoPhep = Db.DiemDanh.Count(d => d.SinhVienId == x.SinhVienId && d.PhienDiemDanh!.LopHocId == id && d.TrangThai == TrangThaiDiemDanh.CoPhep),
-            TyLeChuyenCan = tongBuoi == 0 ? 0 : Db.DiemDanh.Count(d => d.SinhVienId == x.SinhVienId && d.PhienDiemDanh!.LopHocId == id && (d.TrangThai == TrangThaiDiemDanh.CoMat || d.TrangThai == TrangThaiDiemDanh.DiMuon)) * 100.0 / tongBuoi
+            TyLeChuyenCan = Db.DiemDanh.Count(d => d.SinhVienId == x.SinhVienId && d.PhienDiemDanh!.LopHocId == id && d.TrangThai != TrangThaiDiemDanh.CoPhep) == 0 ? 0 :
+                (Db.DiemDanh.Count(d => d.SinhVienId == x.SinhVienId && d.PhienDiemDanh!.LopHocId == id && d.TrangThai == TrangThaiDiemDanh.CoMat) +
+                 Db.DiemDanh.Count(d => d.SinhVienId == x.SinhVienId && d.PhienDiemDanh!.LopHocId == id && d.TrangThai == TrangThaiDiemDanh.DiMuon) * 0.5) * 100.0 /
+                Db.DiemDanh.Count(d => d.SinhVienId == x.SinhVienId && d.PhienDiemDanh!.LopHocId == id && d.TrangThai != TrangThaiDiemDanh.CoPhep)
         }).OrderBy(x => x.MaSinhVien).ToListAsync();
         return View("~/Views/GiangVien/LopCuaToi/ChiTiet.cshtml", new LopChiTietViewModel
         {
