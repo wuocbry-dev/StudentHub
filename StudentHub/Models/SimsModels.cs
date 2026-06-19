@@ -9,6 +9,8 @@ public enum TrangThaiSinhVien { DangHoc, BaoLuu, DaTotNghiep, ThoiHoc }
 public enum GioiTinh { Nam, Nu, Khac }
 public enum TrangThaiLopHoc { SapMo, DangHoc, DaKetThuc, DaHuy }
 public enum TrangThaiDangKy { ChoDuyet, DaDuyet, DaHuy }
+public enum TrangThaiDiemDanh { CoMat, DiMuon, Vang, CoPhep }
+public enum XepLoaiDiem { ChuaXepLoai, XuatSac, Gioi, Kha, TrungBinh, Yeu, Kem }
 
 public class TaiKhoan
 {
@@ -122,4 +124,45 @@ public class DangKyHoc
     public LopHoc? LopHoc { get; set; }
     public DateTime NgayDangKy { get; set; } = DateTime.Now;
     public TrangThaiDangKy TrangThai { get; set; } = TrangThaiDangKy.ChoDuyet;
+}
+
+public class PhienDiemDanh
+{
+    public int Id { get; set; }
+    [Required] public int LopHocId { get; set; }
+    public LopHoc? LopHoc { get; set; }
+    [Required] public int GiangVienId { get; set; }
+    public GiangVien? GiangVien { get; set; }
+    [DataType(DataType.Date)] public DateTime NgayDiemDanh { get; set; }
+    public TimeSpan GioBatDau { get; set; }
+    public TimeSpan GioKetThuc { get; set; }
+    [Required, StringLength(6, MinimumLength = 6)] public string MaPhien { get; set; } = "";
+    [Required, StringLength(100)] public string QrToken { get; set; } = "";
+    public bool DangMo { get; set; } = true;
+    public DateTime NgayTao { get; set; } = DateTime.Now;
+}
+
+public class DiemDanh
+{
+    public int Id { get; set; }
+    [Required] public int PhienDiemDanhId { get; set; }
+    public PhienDiemDanh? PhienDiemDanh { get; set; }
+    [Required] public int SinhVienId { get; set; }
+    public SinhVien? SinhVien { get; set; }
+    public TrangThaiDiemDanh TrangThai { get; set; } = TrangThaiDiemDanh.Vang;
+    public DateTime? ThoiGianCheckIn { get; set; }
+    [StringLength(500)] public string? GhiChu { get; set; }
+}
+
+public class Diem
+{
+    public int Id { get; set; }
+    [Required] public int DangKyHocId { get; set; }
+    public DangKyHoc? DangKyHoc { get; set; }
+    [Range(0, 10)] public decimal? DiemChuyenCan { get; set; }
+    [Range(0, 10)] public decimal? DiemGiuaKy { get; set; }
+    [Range(0, 10)] public decimal? DiemCuoiKy { get; set; }
+    [Range(0, 10)] public decimal? DiemTongKet { get; set; }
+    public XepLoaiDiem XepLoai { get; set; } = XepLoaiDiem.ChuaXepLoai;
+    public DateTime NgayCapNhat { get; set; } = DateTime.Now;
 }

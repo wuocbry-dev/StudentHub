@@ -36,7 +36,13 @@ public class TaiKhoanController(SimsDbContext db) : Controller
             new AuthenticationProperties { IsPersistent = model.GhiNho });
         HttpContext.Session.SetInt32("TaiKhoanId", user.Id);
         HttpContext.Session.SetString("HoTen", user.HoTen);
-        return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl! : user.VaiTro == VaiTro.Admin ? "/Admin/Dashboard" : "/");
+        var destination = user.VaiTro switch
+        {
+            VaiTro.Admin => "/Admin/Dashboard",
+            VaiTro.GiangVien => "/GiangVien/Dashboard",
+            _ => "/"
+        };
+        return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl! : destination);
     }
 
     [Authorize, HttpPost, ValidateAntiForgeryToken]

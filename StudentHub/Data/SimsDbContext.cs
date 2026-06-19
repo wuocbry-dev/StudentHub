@@ -14,6 +14,9 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
     public DbSet<LopHoc> LopHoc => Set<LopHoc>();
     public DbSet<LichHoc> LichHoc => Set<LichHoc>();
     public DbSet<DangKyHoc> DangKyHoc => Set<DangKyHoc>();
+    public DbSet<PhienDiemDanh> PhienDiemDanh => Set<PhienDiemDanh>();
+    public DbSet<DiemDanh> DiemDanh => Set<DiemDanh>();
+    public DbSet<Diem> Diem => Set<Diem>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -31,6 +34,14 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
         b.Entity<PhongHoc>().HasIndex(x => x.MaPhong).IsUnique();
         b.Entity<LopHoc>().HasIndex(x => x.MaLop).IsUnique();
         b.Entity<DangKyHoc>().HasIndex(x => new { x.SinhVienId, x.LopHocId }).IsUnique();
+        b.Entity<PhienDiemDanh>().HasIndex(x => x.MaPhien).IsUnique();
+        b.Entity<PhienDiemDanh>().HasIndex(x => x.QrToken).IsUnique();
+        b.Entity<DiemDanh>().HasIndex(x => new { x.PhienDiemDanhId, x.SinhVienId }).IsUnique();
+        b.Entity<Diem>().HasIndex(x => x.DangKyHocId).IsUnique();
+        b.Entity<Diem>().Property(x => x.DiemChuyenCan).HasPrecision(4, 2);
+        b.Entity<Diem>().Property(x => x.DiemGiuaKy).HasPrecision(4, 2);
+        b.Entity<Diem>().Property(x => x.DiemCuoiKy).HasPrecision(4, 2);
+        b.Entity<Diem>().Property(x => x.DiemTongKet).HasPrecision(4, 2);
 
         foreach (var fk in b.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
             fk.DeleteBehavior = DeleteBehavior.Restrict;
@@ -40,6 +51,8 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
         b.Entity<SinhVien>().Property(x => x.TrangThai).HasConversion<string>();
         b.Entity<LopHoc>().Property(x => x.TrangThai).HasConversion<string>();
         b.Entity<DangKyHoc>().Property(x => x.TrangThai).HasConversion<string>();
+        b.Entity<DiemDanh>().Property(x => x.TrangThai).HasConversion<string>();
+        b.Entity<Diem>().Property(x => x.XepLoai).HasConversion<string>();
 
         var admin = new TaiKhoan
         {
