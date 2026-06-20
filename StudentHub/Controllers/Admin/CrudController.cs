@@ -88,10 +88,11 @@ public abstract class CrudController<TEntity>(SimsDbContext db, string title) : 
         if (entity == null) return NotFound();
         db.Remove(entity);
         if (await Save()) TempData["Success"] = "Xóa dữ liệu thành công.";
-        return RedirectToAction(nameof(Index));
+        return Redirect(AdminIndexUrl());
     }
 
-    private IActionResult RedirectSuccess(string message) { TempData["Success"] = message; return RedirectToAction(nameof(Index)); }
+    private IActionResult RedirectSuccess(string message) { TempData["Success"] = message; return Redirect(AdminIndexUrl()); }
+    private string AdminIndexUrl() => $"/Admin/{ControllerContext.ActionDescriptor.ControllerName}";
     private async Task<bool> Save()
     {
         try { await db.SaveChangesAsync(); return true; }

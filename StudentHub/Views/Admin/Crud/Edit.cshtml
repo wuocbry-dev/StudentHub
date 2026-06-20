@@ -4,6 +4,7 @@
 @{
     Layout = "~/Views/Admin/_AdminLayout.cshtml";
     ViewData["Title"] = (Model.IsEdit ? "Sửa " : "Thêm ") + Model.Title;
+    var adminBaseUrl = "/Admin/" + ViewContext.RouteData.Values["controller"];
     var props = Model.EntityType.GetProperties().Where(CrudController<object>.IsEditable).ToList();
     string OptionText(object item) {
         var t = item.GetType(); var code = t.GetProperties().FirstOrDefault(x => x.Name.StartsWith("Ma"))?.GetValue(item);
@@ -11,7 +12,7 @@
         return string.Join(" - ", new[] { code, name }.Where(x => x != null));
     }
 }
-<div class="mb-4"><a asp-action="Index" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Quay lại</a><h1 class="h3 mt-2">@(Model.IsEdit ? "Chỉnh sửa" : "Thêm mới") @Model.Title.ToLower()</h1></div>
+<div class="mb-4"><a href="@adminBaseUrl" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Quay lại</a><h1 class="h3 mt-2">@(Model.IsEdit ? "Chỉnh sửa" : "Thêm mới") @Model.Title.ToLower()</h1></div>
 <div class="card border-0 shadow-sm"><div class="card-body p-4">
 <form method="post"><div asp-validation-summary="ModelOnly" class="alert alert-danger"></div><div class="row g-3">
 @foreach(var p in props) {
@@ -32,5 +33,5 @@
     }<span class="text-danger">@Html.ValidationMessage(p.Name)</span></div>
 }
 @if(Model.EntityType == typeof(StudentHub.Models.TaiKhoan)){<div class="col-md-6"><label class="form-label">Mật khẩu @(Model.IsEdit ? "(để trống nếu không đổi)" : "")</label><input class="form-control" type="password" name="MatKhau" /><span class="text-danger">@Html.ValidationMessage("MatKhau")</span></div>}
-</div><div class="mt-4 d-flex gap-2"><button class="btn btn-primary px-4"><i class="bi bi-check-lg"></i> Lưu</button><a asp-action="Index" class="btn btn-light">Hủy</a></div></form>
+</div><div class="mt-4 d-flex gap-2"><button class="btn btn-primary px-4"><i class="bi bi-check-lg"></i> Lưu</button><a href="@adminBaseUrl" class="btn btn-light">Hủy</a></div></form>
 </div></div>
