@@ -1,0 +1,46 @@
+@model HoSoSinhVienViewModel
+@{ Layout = "~/Views/Shared/_SinhVienLayout.cshtml"; ViewData["Title"] = "Hồ sơ cá nhân"; }
+
+<div class="page-heading"><div><span class="page-eyebrow">TÀI KHOẢN CÁ NHÂN</span><h1>Hồ sơ sinh viên</h1><p>Kiểm tra thông tin học vụ và cập nhật thông tin liên hệ của bạn.</p></div></div>
+
+<div class="row g-4">
+    <div class="col-lg-4 col-xl-3">
+        <section class="profile-summary student-panel text-center">
+            <div class="profile-avatar">@string.Concat(Model.HoTen.Split(' ', StringSplitOptions.RemoveEmptyEntries).TakeLast(2).Select(x => x[0])).ToUpperInvariant()</div>
+            <h2>@Model.HoTen</h2><p>@Model.MaSinhVien</p>
+            <span class="status-badge status-@Model.TrangThai.ToString().ToLowerInvariant()">@TrangThaiText(Model.TrangThai)</span>
+            <hr />
+            <div class="profile-meta"><span><i class="bi bi-building"></i>Khoa</span><strong>@Model.TenKhoa</strong></div>
+            <div class="profile-meta"><span><i class="bi bi-envelope"></i>Email</span><strong>@Model.Email</strong></div>
+        </section>
+    </div>
+    <div class="col-lg-8 col-xl-9">
+        <form method="post" class="student-panel profile-form" id="studentProfileForm">
+            <div class="student-panel-header"><div><h2>Thông tin cá nhân</h2><p>Các trường học vụ chỉ có thể được cập nhật bởi quản trị viên.</p></div><span class="readonly-note"><i class="bi bi-lock"></i> Thông tin được bảo vệ</span></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <h3 class="form-section-title">Thông tin học vụ</h3>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6"><label class="form-label">Mã sinh viên</label><input class="form-control readonly-field" value="@Model.MaSinhVien" readonly /></div>
+                <div class="col-md-6"><label class="form-label">Họ và tên</label><input class="form-control readonly-field" value="@Model.HoTen" readonly /></div>
+                <div class="col-md-6"><label class="form-label">Email</label><input class="form-control readonly-field" value="@Model.Email" readonly /></div>
+                <div class="col-md-6"><label class="form-label">Khoa</label><input class="form-control readonly-field" value="@Model.TenKhoa" readonly /></div>
+                <div class="col-md-6"><label class="form-label">Ngày sinh</label><input class="form-control readonly-field" value="@(Model.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")" readonly /></div>
+                <div class="col-md-6"><label class="form-label">Giới tính</label><input class="form-control readonly-field" value="@GioiTinhText(Model.GioiTinh)" readonly /></div>
+            </div>
+            <h3 class="form-section-title">Thông tin liên hệ</h3>
+            <div class="row g-3">
+                <div class="col-md-6"><label asp-for="SoDienThoai" class="form-label"></label><div class="input-group"><span class="input-group-text"><i class="bi bi-telephone"></i></span><input asp-for="SoDienThoai" class="form-control" placeholder="Nhập số điện thoại" /></div><span asp-validation-for="SoDienThoai" class="text-danger small"></span></div>
+                <div class="col-12"><label asp-for="DiaChi" class="form-label"></label><textarea asp-for="DiaChi" class="form-control" rows="3" placeholder="Nhập địa chỉ hiện tại"></textarea><div class="d-flex justify-content-between"><span asp-validation-for="DiaChi" class="text-danger small"></span><small class="text-muted"><span id="addressCount">0</span>/300</small></div></div>
+            </div>
+            <div class="profile-actions"><button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-1"></i>Lưu thay đổi</button></div>
+        </form>
+    </div>
+</div>
+
+@functions {
+    string TrangThaiText(TrangThaiSinhVien value) => value switch { TrangThaiSinhVien.DangHoc => "Đang học", TrangThaiSinhVien.BaoLuu => "Bảo lưu", TrangThaiSinhVien.DaTotNghiep => "Đã tốt nghiệp", _ => "Thôi học" };
+    string GioiTinhText(GioiTinh value) => value switch { GioiTinh.Nam => "Nam", GioiTinh.Nu => "Nữ", _ => "Khác" };
+}
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

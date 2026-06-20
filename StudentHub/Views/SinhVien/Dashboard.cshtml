@@ -1,0 +1,52 @@
+@model SinhVienDashboardViewModel
+@{ Layout = "~/Views/Shared/_SinhVienLayout.cshtml"; ViewData["Title"] = "Dashboard"; }
+
+<section class="student-welcome mb-4">
+    <div>
+        <span class="welcome-eyebrow">TỔNG QUAN HỌC TẬP</span>
+        <h1>Xin chào, @Model.HoTen!</h1>
+        <p>Chúc bạn có một ngày học tập hiệu quả. Mã sinh viên: <strong>@Model.MaSinhVien</strong></p>
+    </div>
+    <div class="welcome-illustration"><i class="bi bi-mortarboard"></i></div>
+</section>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-blue"><span class="stat-icon"><i class="bi bi-journals"></i></span><div><small>Môn đang học</small><strong>@Model.TongMonDangHoc</strong><span>môn học</span></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-purple"><span class="stat-icon"><i class="bi bi-award"></i></span><div><small>GPA hiện tại</small><strong>@(Model.Gpa?.ToString("0.00") ?? "--")</strong><span>@(Model.Gpa.HasValue ? "thang điểm 10" : "Chưa có dữ liệu")</span></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-green"><span class="stat-icon"><i class="bi bi-graph-up-arrow"></i></span><div><small>Chuyên cần</small><strong>@(Model.TyLeChuyenCan?.ToString("0.0") ?? "--")@(Model.TyLeChuyenCan.HasValue ? "%" : "")</strong><span>@(Model.TyLeChuyenCan.HasValue ? "Tỷ lệ trung bình" : "Chưa có dữ liệu")</span></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-orange"><span class="stat-icon"><i class="bi bi-calendar2-check"></i></span><div><small>Lớp hôm nay</small><strong>@Model.SoLopHomNay</strong><span>lịch học</span></div></div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <section class="student-panel h-100">
+            <div class="student-panel-header"><div><h2>Lịch học hôm nay</h2><p>@DateTime.Today.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"))</p></div><a href="/SinhVien/LichHoc">Xem tất cả <i class="bi bi-arrow-right"></i></a></div>
+            @if (Model.LopHomNay.Count == 0)
+            {
+                <div class="student-empty"><i class="bi bi-calendar2-heart"></i><strong>Hôm nay không có lịch học</strong><span>Hãy dành thời gian ôn tập và nghỉ ngơi nhé.</span></div>
+            }
+            else
+            {
+                <div class="schedule-list">
+                    @foreach (var item in Model.LopHomNay)
+                    {
+                        <div class="schedule-item"><div class="schedule-time"><strong>@item.GioBatDau.ToString(@"hh\:mm")</strong><span>@item.GioKetThuc.ToString(@"hh\:mm")</span></div><div class="schedule-line"></div><div class="schedule-info"><strong>@item.LopHoc?.MonHoc?.TenMonHoc</strong><span>@item.LopHoc?.MaLop · <i class="bi bi-geo-alt"></i> @(item.PhongHoc?.MaPhong ?? "Chưa xếp phòng")</span></div></div>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+    <div class="col-xl-4">
+        <section class="student-panel h-100">
+            <div class="student-panel-header"><div><h2>Cảnh báo học tập</h2><p>Theo dõi tình trạng học tập</p></div><span class="warning-bell"><i class="bi bi-bell"></i></span></div>
+            @if (Model.SoMonNguyCoRot > 0)
+            {
+                <div class="academic-warning"><i class="bi bi-exclamation-triangle-fill"></i><div><strong>@Model.SoMonNguyCoRot môn có nguy cơ rớt</strong><span>Dựa trên điểm tổng kết hiện có dưới 4.0.</span></div></div>
+            }
+            else
+            {
+                <div class="student-empty compact"><i class="bi bi-shield-check"></i><strong>Chưa có cảnh báo mới</strong><span>Bảng cảnh báo sinh viên chưa được cấu hình.</span></div>
+            }
+        </section>
+    </div>
+</div>

@@ -40,6 +40,7 @@ public class TaiKhoanController(SimsDbContext db) : Controller
         {
             VaiTro.Admin => "/Admin/Dashboard",
             VaiTro.GiangVien => "/GiangVien/Dashboard",
+            VaiTro.SinhVien => "/SinhVien/Dashboard",
             _ => "/"
         };
         return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl! : destination);

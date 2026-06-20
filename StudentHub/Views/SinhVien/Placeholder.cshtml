@@ -1,0 +1,4 @@
+@model SinhVienPlaceholderViewModel
+@{ Layout = "~/Views/Shared/_SinhVienLayout.cshtml"; ViewData["Title"] = Model.TieuDe; }
+<div class="page-heading"><div><span class="page-eyebrow">CỔNG SINH VIÊN</span><h1>@Model.TieuDe</h1></div></div>
+<section class="student-panel student-empty-page"><span class="empty-page-icon"><i class="bi @Model.Icon"></i></span><h2>Chức năng đang được hoàn thiện</h2><p>@Model.MoTa</p><a class="btn btn-primary" href="/SinhVien/Dashboard"><i class="bi bi-arrow-left me-1"></i>Về Dashboard</a></section>

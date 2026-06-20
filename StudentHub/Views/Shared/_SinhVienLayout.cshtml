@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Cổng sinh viên SIMS</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/sinhvien.css" asp-append-version="true" />
+</head>
+<body class="student-body">
+    <div class="student-overlay" id="studentOverlay"></div>
+    <aside class="student-sidebar" id="studentSidebar">
+        <a class="student-brand" href="/SinhVien/Dashboard">
+            <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
+            <span>StudentHub<small>Cổng sinh viên</small></span>
+        </a>
+        <nav class="student-nav">
+            <a class="student-nav-link" href="/SinhVien/Dashboard"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
+            <a class="student-nav-link" href="/SinhVien/HoSo"><i class="bi bi-person-vcard"></i><span>Hồ sơ</span></a>
+            <a class="student-nav-link" href="/SinhVien/LichHoc"><i class="bi bi-calendar-week"></i><span>Lịch học</span></a>
+            <a class="student-nav-link" href="/SinhVien/BangDiem"><i class="bi bi-clipboard-data"></i><span>Bảng điểm</span></a>
+            <a class="student-nav-link" href="/SinhVien/ChuyenCan"><i class="bi bi-person-check"></i><span>Chuyên cần</span></a>
+            <a class="student-nav-link" href="/CheckIn"><i class="bi bi-qr-code-scan"></i><span>Check-in</span></a>
+            <a class="student-nav-link" href="/SinhVien/CanhBao"><i class="bi bi-exclamation-triangle"></i><span>Cảnh báo</span></a>
+        </nav>
+        <div class="student-sidebar-footer">
+            <i class="bi bi-shield-check"></i>
+            <div><strong>Tài khoản sinh viên</strong><small>Được bảo vệ bởi SIMS</small></div>
+        </div>
+    </aside>
+
+    <main class="student-main">
+        <header class="student-topbar">
+            <button type="button" class="btn sidebar-toggle" id="studentSidebarToggle" aria-label="Mở menu"><i class="bi bi-list"></i></button>
+            <div class="topbar-title d-none d-sm-block">Hệ thống quản lý sinh viên</div>
+            <div class="ms-auto d-flex align-items-center gap-2 gap-md-3">
+                <div class="student-user">
+                    <span class="student-avatar">@(string.IsNullOrWhiteSpace(User.Identity?.Name) ? "SV" : string.Concat(User.Identity.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).TakeLast(2).Select(x => x[0])).ToUpperInvariant())</span>
+                    <div class="d-none d-md-block"><strong>@User.Identity?.Name</strong><small>Sinh viên</small></div>
+                </div>
+                <form action="/TaiKhoan/DangXuat" method="post">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-outline-danger btn-sm logout-button" title="Đăng xuất"><i class="bi bi-box-arrow-right"></i><span class="d-none d-lg-inline"> Đăng xuất</span></button>
+                </form>
+            </div>
+        </header>
+        <div class="student-content">
+            @if (TempData["Success"] is string success)
+            {
+                <div class="alert alert-success alert-dismissible fade show student-alert" role="alert"><i class="bi bi-check-circle-fill me-2"></i>@success<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+            }
+            @if (TempData["Error"] is string error)
+            {
+                <div class="alert alert-danger alert-dismissible fade show student-alert" role="alert"><i class="bi bi-exclamation-circle-fill me-2"></i>@error<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+            }
+            @RenderBody()
+        </div>
+    </main>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/sinhvien.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
