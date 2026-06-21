@@ -1,0 +1,30 @@
+@model SinhVienChuyenCanPageViewModel
+@{ Layout = "~/Views/Shared/_SinhVienLayout.cshtml"; ViewData["Title"] = "Chuyên cần"; }
+
+<div class="page-heading"><div><span class="page-eyebrow">THEO DÕI HỌC TẬP</span><h1>Chuyên cần</h1><p>Tổng hợp kết quả điểm danh theo từng lớp đang học.</p></div></div>
+
+@if (!Model.CoDuLieuDiemDanh)
+{
+    <div class="alert alert-info border-0 shadow-sm"><i class="bi bi-info-circle-fill me-2"></i>Chưa có dữ liệu chuyên cần. Hệ thống vẫn hoạt động bình thường.</div>
+}
+@if (Model.DanhSach.Any(x => x.ChuyenCanThap))
+{
+    <div class="alert alert-danger border-0 shadow-sm"><i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Cảnh báo nguy cơ:</strong> bạn có @Model.DanhSach.Count(x => x.ChuyenCanThap) lớp có tỷ lệ chuyên cần dưới 70%.</div>
+}
+
+<div class="row g-4">
+@if (Model.DanhSach.Count == 0)
+{
+    <div class="col-12"><section class="student-panel"><div class="student-empty"><i class="bi bi-person-check"></i><strong>Chưa có dữ liệu chuyên cần</strong><span>Chưa có lớp đang học hoặc chưa phát sinh dữ liệu điểm danh.</span></div></section></div>
+}
+else foreach (var item in Model.DanhSach)
+{
+    var percent = item.TyLeChuyenCan ?? 0;
+    <div class="col-lg-6 col-xxl-4"><section class="student-panel attendance-card @(item.ChuyenCanThap ? "attendance-risk" : "")">
+        <div class="attendance-card-head"><div><span class="class-code">@item.MaLop</span><h2>@item.TenMonHoc</h2></div>@if (item.ChuyenCanThap) { <span class="badge text-bg-danger">Chuyên cần thấp</span> }</div>
+        <div class="attendance-rate"><strong>@(item.TyLeChuyenCan?.ToString("0.0") ?? "--")@(item.TyLeChuyenCan.HasValue ? "%" : "")</strong><span>@(item.TyLeChuyenCan.HasValue ? "Tỷ lệ chuyên cần" : "Chưa có dữ liệu chuyên cần")</span></div>
+        <div class="progress" role="progressbar"><div class="progress-bar @(item.ChuyenCanThap ? "bg-danger" : "bg-success")" style="width:@percent.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%"></div></div>
+        <div class="attendance-stats"><div><strong>@item.CoMat</strong><span>Có mặt</span></div><div><strong>@item.DiMuon</strong><span>Đi muộn</span></div><div><strong>@item.Vang</strong><span>Vắng</span></div><div><strong>@item.TongSoBuoi</strong><span>Tổng buổi</span></div></div>
+    </section></div>
+}
+</div>

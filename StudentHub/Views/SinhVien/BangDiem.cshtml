@@ -1,0 +1,32 @@
+@model SinhVienBangDiemViewModel
+@using System.Text.Json
+@{ Layout = "~/Views/Shared/_SinhVienLayout.cshtml"; ViewData["Title"] = "Bảng điểm"; }
+
+<div class="page-heading"><div><span class="page-eyebrow">KẾT QUẢ HỌC TẬP</span><h1>Bảng điểm</h1><p>Theo dõi điểm thành phần, điểm tổng kết và tiến độ theo học kỳ.</p></div></div>
+
+@if (!Model.CoDuLieuBangDiem)
+{
+    <div class="alert alert-info border-0 shadow-sm"><i class="bi bi-info-circle-fill me-2"></i>Chưa có dữ liệu bảng điểm. Hệ thống vẫn hoạt động bình thường.</div>
+}
+
+<section class="student-panel overflow-hidden mb-4">
+    <div class="table-responsive"><table class="table student-data-table grade-table align-middle mb-0"><thead><tr><th>Môn học</th><th>Mã lớp</th><th>Chuyên cần</th><th>Bài tập</th><th>Giữa kỳ</th><th>Cuối kỳ</th><th>Tổng kết</th><th>Điểm chữ</th><th>Trạng thái</th></tr></thead><tbody>
+    @if (Model.DanhSach.Count == 0) { <tr><td colspan="9"><div class="student-empty"><i class="bi bi-clipboard-x"></i><strong>Chưa có bảng điểm</strong><span>Điểm sẽ xuất hiện sau khi giảng viên cập nhật.</span></div></td></tr> }
+    else foreach (var item in Model.DanhSach)
+    {
+        <tr><td><strong>@item.TenMonHoc</strong><small>@item.HocKy - @item.NamHoc · @item.SoTinChi tín chỉ</small></td><td><span class="class-code">@item.MaLop</span></td><td>@Diem(item.DiemChuyenCan)</td><td>@Diem(item.DiemBaiTap)</td><td>@Diem(item.DiemGiuaKy)</td><td>@Diem(item.DiemCuoiKy)</td><td><strong class="grade-total">@Diem(item.DiemTongKet)</strong></td><td><span class="grade-letter">@(item.DiemChu ?? "--")</span></td><td><span class="badge @Badge(item.TrangThai)">@TrangThai(item.TrangThai)</span></td></tr>
+    }
+    </tbody></table></div>
+</section>
+
+<div class="row g-4">
+    <div class="col-xl-7"><section class="student-panel chart-panel"><div class="student-panel-header"><div><h2>Điểm tổng kết từng môn</h2><p>Thang điểm 10</p></div></div>@if (Model.DanhSach.Any(x => x.DiemTongKet.HasValue)) { <div class="chart-wrap"><canvas id="subjectGradeChart" data-labels='@JsonSerializer.Serialize(Model.DanhSach.Where(x => x.DiemTongKet.HasValue).Select(x => x.TenMonHoc))' data-values='@JsonSerializer.Serialize(Model.DanhSach.Where(x => x.DiemTongKet.HasValue).Select(x => x.DiemTongKet))'></canvas></div> } else { <div class="student-empty"><i class="bi bi-bar-chart"></i><strong>Chưa có điểm tổng kết</strong></div> }</section></div>
+    <div class="col-xl-5"><section class="student-panel chart-panel"><div class="student-panel-header"><div><h2>GPA theo học kỳ</h2><p>Trung bình có trọng số tín chỉ</p></div></div>@if (Model.CoDuDuLieuGpa) { <div class="chart-wrap"><canvas id="semesterGpaChart" data-labels='@JsonSerializer.Serialize(Model.GpaTheoHocKy.Select(x => x.HocKy))' data-values='@JsonSerializer.Serialize(Model.GpaTheoHocKy.Select(x => x.Gpa))'></canvas></div> } else { <div class="student-empty"><i class="bi bi-graph-up"></i><strong>Chưa có đủ dữ liệu để vẽ biểu đồ GPA theo học kỳ.</strong></div> }</section></div>
+</div>
+
+@functions {
+    string Diem(decimal? value) => value?.ToString("0.##") ?? "--";
+    string TrangThai(TrangThaiKetQua value) => value switch { TrangThaiKetQua.Dat => "Đạt", TrangThaiKetQua.Rot => "Rớt", TrangThaiKetQua.ThieuDiemCuoiKy => "Thiếu điểm cuối kỳ", _ => "Đang học" };
+    string Badge(TrangThaiKetQua value) => value switch { TrangThaiKetQua.Dat => "text-bg-success", TrangThaiKetQua.Rot => "text-bg-danger", TrangThaiKetQua.ThieuDiemCuoiKy => "text-bg-warning", _ => "text-bg-primary" };
+}
+@section Scripts { <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script> }

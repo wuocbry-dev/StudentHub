@@ -27,4 +27,48 @@
     const updateCount = () => { if (counter && address) counter.textContent = address.value.length; };
     address?.addEventListener('input', updateCount);
     updateCount();
+
+    window.addEventListener('load', () => {
+        const calendarElement = document.getElementById('studentCalendar');
+        if (calendarElement && window.FullCalendar) {
+            let semester = null;
+            try { semester = JSON.parse(calendarElement.dataset.semester || 'null'); } catch { semester = null; }
+            const calendar = new FullCalendar.Calendar(calendarElement, {
+                locale: 'vi',
+                initialDate: calendarElement.dataset.date,
+                initialView: calendarElement.dataset.view || 'timeGridWeek',
+                firstDay: 1,
+                allDaySlot: false,
+                nowIndicator: true,
+                height: 'auto',
+                slotMinTime: '06:00:00',
+                slotMaxTime: '22:00:00',
+                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
+                buttonText: { today: 'Hôm nay', month: 'Tháng', week: 'Tuần', list: 'Danh sách' },
+                events: { url: calendarElement.dataset.endpoint, extraParams: { hocKy: semester || '' } },
+                eventDidMount(info) {
+                    const props = info.event.extendedProps;
+                    info.el.title = `${info.event.title}\n${props.phongHoc}\n${props.giangVien}${props.trungLich ? '\nTrùng lịch' : ''}`;
+                }
+            });
+            calendar.render();
+            document.querySelector('[data-bs-target="#scheduleCalendar"]')?.addEventListener('shown.bs.tab', () => calendar.updateSize());
+        }
+
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, max: 10, ticks: { stepSize: 2 } } },
+            plugins: { legend: { display: false } }
+        };
+        const createChart = (id, type, label, color) => {
+            const canvas = document.getElementById(id);
+            if (!canvas || !window.Chart) return;
+            const labels = JSON.parse(canvas.dataset.labels || '[]');
+            const values = JSON.parse(canvas.dataset.values || '[]');
+            new Chart(canvas, { type, data: { labels, datasets: [{ label, data: values, backgroundColor: color, borderColor: color, borderWidth: 2, borderRadius: 6, tension: .3 }] }, options: chartOptions });
+        };
+        createChart('subjectGradeChart', 'bar', 'Điểm tổng kết', '#2563eb');
+        createChart('semesterGpaChart', 'line', 'GPA', '#7c3aed');
+    });
 })();

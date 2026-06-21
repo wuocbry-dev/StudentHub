@@ -1,0 +1,55 @@
+@model SinhVienLichHocViewModel
+@using System.Globalization
+@using System.Text.Json
+@{ Layout = "~/Views/Shared/_SinhVienLayout.cshtml"; ViewData["Title"] = "Lịch học"; }
+
+<div class="page-heading"><div><span class="page-eyebrow">KẾ HOẠCH HỌC TẬP</span><h1>Lịch học</h1><p>Theo dõi lịch theo tuần, tháng hoặc học kỳ.</p></div></div>
+
+@if (Model.LopTiepTheo != null)
+{
+    <section class="next-class-card mb-4">
+        <span class="next-class-icon"><i class="bi bi-alarm"></i></span>
+        <div><small>LỚP HỌC TIẾP THEO</small><h2>@Model.LopTiepTheo.TenMonHoc</h2><p>@Model.LopTiepTheo.NgayHoc.ToString("dddd, dd/MM/yyyy", new CultureInfo("vi-VN")) · @Model.LopTiepTheo.GioBatDau.ToString(@"hh\:mm") - @Model.LopTiepTheo.GioKetThuc.ToString(@"hh\:mm") · @Model.LopTiepTheo.PhongHoc</p></div>
+        <span class="badge text-bg-light text-primary">@Model.LopTiepTheo.MaLop</span>
+    </section>
+}
+
+@if (Model.SoLichTrung > 0)
+{
+    <div class="alert alert-danger border-0 shadow-sm"><i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Phát hiện trùng lịch:</strong> có @Model.SoLichTrung buổi học nằm trong khung giờ giao nhau.</div>
+}
+
+<section class="student-panel mb-4">
+    <form method="get" class="schedule-filter row g-3 align-items-end">
+        <div class="col-md-3"><label class="form-label">Chế độ</label><select class="form-select" name="cheDo" id="scheduleMode"><option value="tuan" selected="@(Model.CheDo == "tuan" ? "selected" : null)">Theo tuần</option><option value="thang" selected="@(Model.CheDo == "thang" ? "selected" : null)">Theo tháng</option><option value="hocky" selected="@(Model.CheDo == "hocky" ? "selected" : null)">Theo học kỳ</option></select></div>
+        <div class="col-md-3"><label class="form-label">Ngày tham chiếu</label><input class="form-control" type="date" name="ngay" value="@Model.Ngay.ToString("yyyy-MM-dd")" /></div>
+        <div class="col-md-4"><label class="form-label">Học kỳ</label><select class="form-select" name="hocKy"><option value="">Tất cả học kỳ</option>@foreach (var value in Model.HocKyOptions) { <option value="@value" selected="@(value == Model.HocKy ? "selected" : null)">@value</option> }</select></div>
+        <div class="col-md-2 d-grid"><button class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Lọc lịch</button></div>
+    </form>
+</section>
+
+<ul class="nav nav-pills student-view-tabs mb-3" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#scheduleTable"><i class="bi bi-table me-1"></i>Dạng bảng</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#scheduleCalendar"><i class="bi bi-calendar3 me-1"></i>Calendar</button></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="scheduleTable">
+        <section class="student-panel overflow-hidden">
+            <div class="student-panel-header"><div><h2>@Model.TuNgay.ToString("dd/MM/yyyy") - @Model.DenNgay.ToString("dd/MM/yyyy")</h2><p>@Model.LichHoc.Count buổi học trong khoảng đã chọn</p></div></div>
+            <div class="table-responsive"><table class="table student-data-table align-middle mb-0"><thead><tr><th>Ngày học</th><th>Môn học</th><th>Mã lớp</th><th>Phòng</th><th>Giảng viên</th><th>Thời gian</th><th>Trạng thái</th></tr></thead><tbody>
+            @if (Model.LichHoc.Count == 0) { <tr><td colspan="7"><div class="student-empty"><i class="bi bi-calendar-x"></i><strong>Không có lịch học</strong><span>Không tìm thấy buổi học trong khoảng đã chọn.</span></div></td></tr> }
+            else foreach (var item in Model.LichHoc)
+            {
+                <tr class="@(item.HomNay ? "schedule-today" : "") @(item.TrungLich ? "schedule-conflict" : "")"><td><strong>@item.NgayHoc.ToString("dd/MM/yyyy")</strong><small>@item.NgayHoc.ToString("dddd", new CultureInfo("vi-VN"))</small></td><td><strong>@item.TenMonHoc</strong></td><td><span class="class-code">@item.MaLop</span></td><td><i class="bi bi-geo-alt text-primary me-1"></i>@item.PhongHoc</td><td>@item.GiangVien</td><td class="text-nowrap">@item.GioBatDau.ToString(@"hh\:mm") - @item.GioKetThuc.ToString(@"hh\:mm")</td><td>@if (item.TrungLich) { <span class="badge text-bg-danger">Trùng lịch</span> } else if (item.HomNay) { <span class="badge text-bg-primary">Hôm nay</span> }</td></tr>
+            }
+            </tbody></table></div>
+        </section>
+    </div>
+    <div class="tab-pane fade" id="scheduleCalendar"><section class="student-panel calendar-panel"><div id="studentCalendar" data-endpoint="/SinhVien/GetLichHocEvents" data-date="@Model.Ngay.ToString("yyyy-MM-dd")" data-view="@(Model.CheDo == "thang" ? "dayGridMonth" : "timeGridWeek")" data-semester='@JsonSerializer.Serialize(Model.CheDo == "hocky" ? Model.HocKy : null)'></div></section></div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales-all.global.min.js"></script>
+}
