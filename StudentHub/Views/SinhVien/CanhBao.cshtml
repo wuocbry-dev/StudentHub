@@ -1,0 +1,30 @@
+@model SinhVienCanhBaoViewModel
+@{ Layout = "~/Views/Shared/_SinhVienLayout.cshtml"; ViewData["Title"] = "Cảnh báo học tập"; }
+
+<div class="page-heading align-items-end"><div><span class="page-eyebrow">THEO DÕI RỦI RO</span><h1>Cảnh báo học tập</h1><p>Hệ thống tổng hợp cảnh báo từ điểm số, chuyên cần và lịch học.</p></div>
+@if (Model.SoChuaDoc > 0) { <form action="/SinhVien/CanhBao/DaDocTatCa" method="post" data-student-confirm="Đánh dấu tất cả cảnh báo là đã đọc?">@Html.AntiForgeryToken()<button class="btn btn-outline-primary"><i class="bi bi-check2-all me-1"></i>Đọc tất cả (@Model.SoChuaDoc)</button></form> }
+</div>
+
+@if (!Model.CoDuLieuCanhBao) { <div class="alert alert-info border-0 shadow-sm"><i class="bi bi-info-circle-fill me-2"></i>Module cảnh báo chưa sẵn sàng. Vui lòng cập nhật database.</div> }
+
+<div class="row g-3">
+@if (Model.DanhSach.Count == 0)
+{
+    <div class="col-12"><section class="student-panel"><div class="student-empty"><i class="bi bi-shield-check"></i><strong>Chưa có cảnh báo học tập</strong><span>Không phát hiện rủi ro mới từ dữ liệu hiện tại.</span></div></section></div>
+}
+else foreach (var item in Model.DanhSach)
+{
+    <div class="col-12"><article class="student-panel warning-card severity-@item.MucDo.ToString().ToLowerInvariant() @(item.DaDoc ? "warning-read" : "")">
+        <span class="warning-card-icon"><i class="bi @Icon(item.LoaiCanhBao)"></i></span>
+        <div class="warning-card-body"><div class="d-flex flex-wrap gap-2 align-items-center"><h2>@Loai(item.LoaiCanhBao)</h2><span class="badge @MucDoBadge(item.MucDo)">@MucDoText(item.MucDo)</span><span class="badge @(item.DaDoc ? "text-bg-light" : "text-bg-primary")">@(item.DaDoc ? "Đã đọc" : "Chưa đọc")</span></div><p>@item.NoiDung</p><small><i class="bi bi-journal-bookmark me-1"></i>@item.LopHoc?.MonHoc?.TenMonHoc · @item.LopHoc?.MaLop <span class="mx-2">·</span><i class="bi bi-clock me-1"></i>@item.NgayTao.ToString("dd/MM/yyyy HH:mm")</small></div>
+        @if (!item.DaDoc) { <form action="/SinhVien/CanhBao/DaDoc/@item.Id" method="post">@Html.AntiForgeryToken()<button class="btn btn-sm btn-outline-primary text-nowrap"><i class="bi bi-check2 me-1"></i>Đánh dấu đã đọc</button></form> }
+    </article></div>
+}
+</div>
+
+@functions {
+    string Loai(LoaiCanhBao value) => value switch { LoaiCanhBao.ChuyenCanThap => "Chuyên cần thấp", LoaiCanhBao.DiemThap => "Điểm thấp", LoaiCanhBao.TrungLichHoc => "Trùng lịch học", _ => "Thiếu điểm" };
+    string Icon(LoaiCanhBao value) => value switch { LoaiCanhBao.ChuyenCanThap => "bi-person-exclamation", LoaiCanhBao.DiemThap => "bi-graph-down-arrow", LoaiCanhBao.TrungLichHoc => "bi-calendar-x", _ => "bi-clipboard-x" };
+    string MucDoText(MucDo value) => value switch { MucDo.NguyHiem => "Nguy hiểm", MucDo.CanhBao => "Cảnh báo", _ => "Thông tin" };
+    string MucDoBadge(MucDo value) => value switch { MucDo.NguyHiem => "text-bg-danger", MucDo.CanhBao => "text-bg-warning", _ => "text-bg-info" };
+}

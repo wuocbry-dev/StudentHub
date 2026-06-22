@@ -12,6 +12,15 @@ public class SinhVienDashboardViewModel
     public int SoLopHomNay { get; set; }
     public int SoMonNguyCoRot { get; set; }
     public List<LichHoc> LopHomNay { get; set; } = [];
+    public List<CanhBaoSinhVien> CanhBaoMoiNhat { get; set; } = [];
+    public int SoCanhBaoChuaDoc { get; set; }
+}
+
+public class SinhVienCanhBaoViewModel
+{
+    public List<CanhBaoSinhVien> DanhSach { get; set; } = [];
+    public int SoChuaDoc => DanhSach.Count(x => !x.DaDoc);
+    public bool CoDuLieuCanhBao { get; set; } = true;
 }
 
 public class HoSoSinhVienViewModel

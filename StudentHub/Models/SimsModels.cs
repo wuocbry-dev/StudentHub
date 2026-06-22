@@ -10,6 +10,8 @@ public enum GioiTinh { Nam, Nu, Khac }
 public enum TrangThaiLopHoc { SapMo, DangHoc, DaKetThuc, DaHuy }
 public enum TrangThaiDangKy { ChoDuyet, DaDuyet, DaHuy }
 public enum TrangThaiDiemDanh { CoMat, DiMuon, Vang, CoPhep }
+public enum LoaiCanhBao { ChuyenCanThap, DiemThap, TrungLichHoc, ThieuDiem }
+public enum MucDo { ThongTin, CanhBao, NguyHiem }
 
 public class TaiKhoan
 {
@@ -167,4 +169,18 @@ public class BangDiem
     [Range(0, 10)] public decimal? DiemTongKet { get; set; }
     [StringLength(1)] public string? DiemChu { get; set; }
     public DateTime NgayCapNhat { get; set; } = DateTime.Now;
+}
+
+public class CanhBaoSinhVien
+{
+    public int Id { get; set; }
+    [Required] public int SinhVienId { get; set; }
+    public SinhVien? SinhVien { get; set; }
+    [Required] public int LopHocId { get; set; }
+    public LopHoc? LopHoc { get; set; }
+    [Required] public LoaiCanhBao LoaiCanhBao { get; set; }
+    [Required, StringLength(500)] public string NoiDung { get; set; } = "";
+    [Required] public MucDo MucDo { get; set; }
+    public bool DaDoc { get; set; }
+    public DateTime NgayTao { get; set; } = DateTime.Now;
 }

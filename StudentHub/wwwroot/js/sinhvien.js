@@ -72,3 +72,29 @@
         createChart('semesterGpaChart', 'line', 'GPA', '#7c3aed');
     });
 })();
+
+function showStudentCheckInAlert(success, message) {
+    if (!window.Swal) return;
+    Swal.fire({
+        icon: success ? 'success' : 'error',
+        title: success ? 'Check-in thành công' : 'Không thể check-in',
+        text: message,
+        confirmButtonText: 'Đã hiểu',
+        confirmButtonColor: '#2563eb'
+    });
+}
+
+document.querySelectorAll('form[data-student-confirm]').forEach(form => form.addEventListener('submit', event => {
+    if (form.dataset.confirmed) return;
+    event.preventDefault();
+    Swal.fire({
+        icon: 'question', title: form.dataset.studentConfirm,
+        showCancelButton: true, confirmButtonText: 'Xác nhận', cancelButtonText: 'Hủy',
+        confirmButtonColor: '#2563eb'
+    }).then(result => {
+        if (result.isConfirmed) {
+            form.dataset.confirmed = 'true';
+            form.requestSubmit();
+        }
+    });
+}));

@@ -5,12 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudentHub.Data;
 using StudentHub.Models;
+using StudentHub.Services;
 
 namespace StudentHub.Controllers;
 
 [Authorize(Roles = "SinhVien")]
 [Route("SinhVien")]
-public class SinhVienController(SimsDbContext db) : Controller
+public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoService) : Controller
 {
     [HttpGet("")]
     public IActionResult Index() => RedirectToAction(nameof(Dashboard));
@@ -83,6 +84,19 @@ public class SinhVienController(SimsDbContext db) : Controller
             // DiemDanh is an optional module in older database versions.
         }
 
+        var canhBaoMoiNhat = new List<CanhBaoSinhVien>();
+        var soCanhBaoChuaDoc = 0;
+        try
+        {
+            var canhBao = (await canhBaoService.DongBoVaLayAsync(sinhVien.Id)).Where(x => !x.DaDoc).ToList();
+            soCanhBaoChuaDoc = canhBao.Count;
+            canhBaoMoiNhat = canhBao.Take(5).ToList();
+        }
+        catch (DbException)
+        {
+            // CanhBaoSinhVien is unavailable until its migration is applied.
+        }
+
         return View(new SinhVienDashboardViewModel
         {
             HoTen = sinhVien.HoTen,
@@ -92,7 +106,9 @@ public class SinhVienController(SimsDbContext db) : Controller
             TyLeChuyenCan = tyLeChuyenCan,
             SoLopHomNay = lichHomNay.Count,
             SoMonNguyCoRot = soMonNguyCoRot,
-            LopHomNay = lichHomNay
+            LopHomNay = lichHomNay,
+            CanhBaoMoiNhat = canhBaoMoiNhat,
+            SoCanhBaoChuaDoc = soCanhBaoChuaDoc
         });
     }
 
@@ -253,7 +269,46 @@ public class SinhVienController(SimsDbContext db) : Controller
     }
 
     [HttpGet("CanhBao")]
-    public IActionResult CanhBao() => Placeholder("Cảnh báo học tập", "Hệ thống chưa có dữ liệu cảnh báo sinh viên.", "bi-exclamation-triangle");
+    public async Task<IActionResult> CanhBao()
+    {
+        var sinhVien = await GetSinhVien().AsNoTracking().SingleOrDefaultAsync();
+        if (sinhVien == null) return View("ChuaLienKet");
+        var model = new SinhVienCanhBaoViewModel();
+        try
+        {
+            model.DanhSach = await canhBaoService.DongBoVaLayAsync(sinhVien.Id);
+        }
+        catch (DbException)
+        {
+            model.CoDuLieuCanhBao = false;
+        }
+        return View(model);
+    }
+
+    [HttpPost("CanhBao/DaDoc/{id:int}"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> DanhDauCanhBaoDaDoc(int id)
+    {
+        var sinhVienId = await GetSinhVien().Select(x => (int?)x.Id).SingleOrDefaultAsync();
+        if (sinhVienId == null) return Forbid();
+        var canhBao = await db.CanhBaoSinhVien.SingleOrDefaultAsync(x => x.Id == id && x.SinhVienId == sinhVienId);
+        if (canhBao == null) return NotFound();
+        canhBao.DaDoc = true;
+        await db.SaveChangesAsync();
+        TempData["Success"] = "Đã đánh dấu cảnh báo là đã đọc.";
+        return RedirectToAction(nameof(CanhBao));
+    }
+
+    [HttpPost("CanhBao/DaDocTatCa"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> DanhDauTatCaCanhBaoDaDoc()
+    {
+        var sinhVienId = await GetSinhVien().Select(x => (int?)x.Id).SingleOrDefaultAsync();
+        if (sinhVienId == null) return Forbid();
+        var canhBao = await db.CanhBaoSinhVien.Where(x => x.SinhVienId == sinhVienId && !x.DaDoc).ToListAsync();
+        foreach (var item in canhBao) item.DaDoc = true;
+        await db.SaveChangesAsync();
+        TempData["Success"] = $"Đã đánh dấu {canhBao.Count} cảnh báo là đã đọc.";
+        return RedirectToAction(nameof(CanhBao));
+    }
 
     private IQueryable<Models.SinhVien> GetSinhVien()
     {

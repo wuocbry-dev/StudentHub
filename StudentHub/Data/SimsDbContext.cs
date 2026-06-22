@@ -17,6 +17,7 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
     public DbSet<PhienDiemDanh> PhienDiemDanh => Set<PhienDiemDanh>();
     public DbSet<DiemDanh> DiemDanh => Set<DiemDanh>();
     public DbSet<BangDiem> BangDiem => Set<BangDiem>();
+    public DbSet<CanhBaoSinhVien> CanhBaoSinhVien => Set<CanhBaoSinhVien>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -38,6 +39,8 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
         b.Entity<PhienDiemDanh>().HasIndex(x => x.QrToken).IsUnique();
         b.Entity<DiemDanh>().HasIndex(x => new { x.PhienDiemDanhId, x.SinhVienId }).IsUnique();
         b.Entity<BangDiem>().HasIndex(x => new { x.SinhVienId, x.LopHocId }).IsUnique();
+        b.Entity<CanhBaoSinhVien>().HasIndex(x => new { x.SinhVienId, x.LopHocId, x.LoaiCanhBao })
+            .IsUnique().HasFilter("[DaDoc] = 0");
         b.Entity<BangDiem>().Property(x => x.DiemChuyenCan).HasPrecision(4, 2);
         b.Entity<BangDiem>().Property(x => x.DiemBaiTap).HasPrecision(4, 2);
         b.Entity<BangDiem>().Property(x => x.DiemGiuaKy).HasPrecision(4, 2);
@@ -53,6 +56,8 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
         b.Entity<LopHoc>().Property(x => x.TrangThai).HasConversion<string>();
         b.Entity<DangKyHoc>().Property(x => x.TrangThai).HasConversion<string>();
         b.Entity<DiemDanh>().Property(x => x.TrangThai).HasConversion<string>();
+        b.Entity<CanhBaoSinhVien>().Property(x => x.LoaiCanhBao).HasConversion<string>();
+        b.Entity<CanhBaoSinhVien>().Property(x => x.MucDo).HasConversion<string>();
 
         var admin = new TaiKhoan
         {

@@ -39,9 +39,15 @@
     <div class="col-xl-4">
         <section class="student-panel h-100">
             <div class="student-panel-header"><div><h2>Cảnh báo học tập</h2><p>Theo dõi tình trạng học tập</p></div><span class="warning-bell"><i class="bi bi-bell"></i></span></div>
-            @if (Model.SoMonNguyCoRot > 0)
+            @if (Model.CanhBaoMoiNhat.Count > 0)
             {
-                <div class="academic-warning"><i class="bi bi-exclamation-triangle-fill"></i><div><strong>@Model.SoMonNguyCoRot môn có nguy cơ rớt</strong><span>Dựa trên điểm tổng kết hiện có dưới 4.0.</span></div></div>
+                <div class="dashboard-warning-list">
+                @foreach (var canhBao in Model.CanhBaoMoiNhat)
+                {
+                    <a href="/SinhVien/CanhBao" class="dashboard-warning-item severity-@canhBao.MucDo.ToString().ToLowerInvariant()"><i class="bi @CanhBaoIcon(canhBao.LoaiCanhBao)"></i><div><strong>@CanhBaoText(canhBao.LoaiCanhBao)</strong><span>@canhBao.NoiDung</span></div></a>
+                }
+                </div>
+                <div class="px-3 pb-3"><a href="/SinhVien/CanhBao" class="btn btn-sm btn-outline-primary w-100">Xem tất cả @Model.SoCanhBaoChuaDoc cảnh báo</a></div>
             }
             else
             {
@@ -50,3 +56,8 @@
         </section>
     </div>
 </div>
+
+@functions {
+    string CanhBaoText(LoaiCanhBao value) => value switch { LoaiCanhBao.ChuyenCanThap => "Chuyên cần thấp", LoaiCanhBao.DiemThap => "Điểm thấp", LoaiCanhBao.TrungLichHoc => "Trùng lịch học", _ => "Thiếu điểm" };
+    string CanhBaoIcon(LoaiCanhBao value) => value switch { LoaiCanhBao.ChuyenCanThap => "bi-person-exclamation", LoaiCanhBao.DiemThap => "bi-graph-down-arrow", LoaiCanhBao.TrungLichHoc => "bi-calendar-x", _ => "bi-clipboard-x" };
+}
