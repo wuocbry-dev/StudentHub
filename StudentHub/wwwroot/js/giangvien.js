@@ -22,6 +22,18 @@ document.addEventListener('DOMContentLoaded',()=>{
  if(document.getElementById('gradeTable'))new DataTable('#gradeTable',{language:{url:'https://cdn.datatables.net/plug-ins/2.3.2/i18n/vi.json'},pageLength:25,columnDefs:[{orderable:false,targets:[2,3,4,5,8]}]});
  if(document.getElementById('attendanceTable'))new DataTable('#attendanceTable',{language:{url:'https://cdn.datatables.net/plug-ins/2.3.2/i18n/vi.json'},pageLength:25,columnDefs:[{orderable:false,targets:[3,4,5]}]});
 });
+function updateGradePreview(row){
+ const inputs=[...row.querySelectorAll('.grade-input')],total=row.querySelector('[data-grade-total]'),letter=row.querySelector('[data-grade-letter]'),hint=row.querySelector('[data-grade-hint]');
+ if(inputs.length!==4||!total||!letter)return;
+ const values=inputs.map(input=>input.value.trim()===''?null:Number(input.value.replace(',','.')));
+ const valid=values.every(value=>value!==null&&Number.isFinite(value)&&value>=0&&value<=10);
+ letter.className='grade-letter grade-none';
+ if(!valid){total.textContent='-';letter.textContent='-';if(hint)hint.textContent='Nhập đủ 4 cột';return}
+ const result=Math.round((values[0]*.1+values[1]*.2+values[2]*.3+values[3]*.4)*100)/100;
+ const grade=result>=8.5?'A':result>=7?'B':result>=5.5?'C':result>=4?'D':'F';
+ total.textContent=result.toFixed(2);letter.textContent=grade;letter.className=`grade-letter grade-${grade.toLowerCase()}`;if(hint)hint.textContent='Xem trước · bấm lưu';
+}
+document.addEventListener('input',event=>{if(event.target.matches('.grade-input'))updateGradePreview(event.target.closest('[data-grade-row]'))});
 function startAttendanceRefresh(url){
  const refresh=async()=>{try{const response=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});if(!response.ok)return;const data=await response.json();data.danhSach.forEach(item=>{const row=document.querySelector(`[data-attendance-id="${item.id}"]`);if(!row)return;const select=row.querySelector('[data-attendance-status]'),checkin=row.querySelector('[data-checkin]'),note=row.querySelector('[data-attendance-note]');if(select&&document.activeElement!==select)select.value=item.trangThai;if(checkin)checkin.textContent=item.thoiGianCheckIn;if(note&&document.activeElement!==note)note.value=item.ghiChu??'';});}catch{}}
  refresh();setInterval(refresh,5000);

@@ -74,7 +74,9 @@ public class QuanLyDiemController(SimsDbContext db) : GiangVienPortalController(
         diem.NgayCapNhat = DateTime.Now;
         if (diem.Id == 0) Db.BangDiem.Add(diem);
         await Db.SaveChangesAsync();
-        TempData["Success"] = "Đã lưu và tính lại điểm sinh viên.";
+        TempData["Success"] = diem.DiemTongKet.HasValue
+            ? $"Đã lưu. Điểm tổng kết: {diem.DiemTongKet:0.00} ({diem.DiemChu})."
+            : "Đã lưu điểm thành phần. Cần nhập đủ 4 cột để tính điểm tổng kết.";
         return RedirectToAction(nameof(Lop), new { lopHocId });
     }
 
@@ -113,6 +115,28 @@ public class QuanLyDiemController(SimsDbContext db) : GiangVienPortalController(
         }
         await Db.SaveChangesAsync();
         TempData["Success"] = "Đã tính lại điểm chuyên cần cho toàn bộ sinh viên trong lớp.";
+        return RedirectToAction(nameof(Lop), new { lopHocId });
+    }
+
+    [HttpPost("TinhLaiDiemTongKet"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> TinhLaiDiemTongKet(int lopHocId)
+    {
+        var giangVienId = await GetGiangVienId();
+        if (giangVienId == null || !await SoHuuLop(lopHocId, giangVienId.Value)) return Forbid();
+
+        var bangDiem = await Db.BangDiem.Where(x => x.LopHocId == lopHocId).ToListAsync();
+        foreach (var diem in bangDiem)
+        {
+            TinhTongKet(diem);
+            diem.NgayCapNhat = DateTime.Now;
+        }
+        await Db.SaveChangesAsync();
+
+        var daTinh = bangDiem.Count(x => x.DiemTongKet.HasValue);
+        var thieuDiem = bangDiem.Count - daTinh;
+        TempData["Success"] = thieuDiem == 0
+            ? $"Đã tính lại điểm tổng kết cho {daTinh} sinh viên."
+            : $"Đã tính tổng kết cho {daTinh} sinh viên; {thieuDiem} sinh viên chưa đủ 4 cột điểm.";
         return RedirectToAction(nameof(Lop), new { lopHocId });
     }
 

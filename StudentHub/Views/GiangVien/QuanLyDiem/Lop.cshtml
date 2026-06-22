@@ -1,21 +1,25 @@
 @model QuanLyDiemViewModel
+@using System.Globalization
 @{ Layout = "~/Views/GiangVien/_GiangVienLayout.cshtml"; ViewData["Title"] = "Bảng điểm " + Model.LopHoc.MaLop; }
 <div class="d-flex flex-wrap justify-content-between gap-2 mb-4">
     <div><a href="/GiangVien/QuanLyDiem" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Bảng điểm</a><h1 class="h3 mt-2 mb-1">Bảng điểm @Model.LopHoc.MaLop</h1><p class="text-muted mb-0">@Model.LopHoc.TenLop · @Model.LopHoc.MonHoc?.TenMonHoc</p></div>
-    <form action="/GiangVien/QuanLyDiem/TinhLaiDiemChuyenCan" method="post" class="align-self-end" data-confirm="Tính lại điểm chuyên cần cho toàn bộ sinh viên trong lớp?">@Html.AntiForgeryToken()<input type="hidden" name="lopHocId" value="@Model.LopHoc.Id"><button class="btn btn-outline-success"><i class="bi bi-calculator"></i> Tính lại điểm chuyên cần</button></form>
+    <div class="d-flex flex-wrap gap-2 align-self-end">
+        <form action="/GiangVien/QuanLyDiem/TinhLaiDiemChuyenCan" method="post" data-confirm="Tính lại điểm chuyên cần cho toàn bộ sinh viên trong lớp?">@Html.AntiForgeryToken()<input type="hidden" name="lopHocId" value="@Model.LopHoc.Id"><button class="btn btn-outline-success"><i class="bi bi-person-check"></i> Tính lại chuyên cần</button></form>
+        <form action="/GiangVien/QuanLyDiem/TinhLaiDiemTongKet" method="post" data-confirm="Tính lại điểm tổng kết từ các điểm thành phần đã lưu?">@Html.AntiForgeryToken()<input type="hidden" name="lopHocId" value="@Model.LopHoc.Id"><button class="btn btn-primary"><i class="bi bi-calculator"></i> Tính lại tổng kết</button></form>
+    </div>
 </div>
-<div class="alert alert-info"><i class="bi bi-calculator me-2"></i>Điểm tổng kết = 10% chuyên cần + 20% bài tập + 30% giữa kỳ + 40% cuối kỳ. Điểm chữ: A ≥ 8,5; B ≥ 7; C ≥ 5,5; D ≥ 4; F &lt; 4.</div>
+<div class="alert alert-info"><i class="bi bi-calculator me-2"></i>Điểm tổng kết được tính khi nhập đủ 4 cột: <strong>10% chuyên cần + 20% bài tập + 30% giữa kỳ + 40% cuối kỳ</strong>. Điểm chữ: A ≥ 8,5; B ≥ 7; C ≥ 5,5; D ≥ 4; F &lt; 4.</div>
 <div class="card border-0 shadow-sm"><div class="card-body"><div class="table-responsive"><table id="gradeTable" class="table table-striped align-middle grade-table w-100">
 <thead><tr><th>Mã SV</th><th>Họ tên</th><th>Chuyên cần</th><th>Bài tập</th><th>Giữa kỳ</th><th>Cuối kỳ</th><th>Tổng kết</th><th>Điểm chữ</th><th></th></tr></thead><tbody>
 @foreach (var x in Model.DanhSach)
 {
     var formId = "diem-" + x.SinhVienId;
-    <tr><td>@x.MaSinhVien</td><td><strong>@x.HoTen</strong></td>
-    <td><input type="number" form="@formId" name="diemChuyenCan" value="@x.DiemChuyenCan" min="0" max="10" step="0.01" class="form-control form-control-sm grade-input"></td>
-    <td><input type="number" form="@formId" name="diemBaiTap" value="@x.DiemBaiTap" min="0" max="10" step="0.01" class="form-control form-control-sm grade-input"></td>
-    <td><input type="number" form="@formId" name="diemGiuaKy" value="@x.DiemGiuaKy" min="0" max="10" step="0.01" class="form-control form-control-sm grade-input"></td>
-    <td><input type="number" form="@formId" name="diemCuoiKy" value="@x.DiemCuoiKy" min="0" max="10" step="0.01" class="form-control form-control-sm grade-input"></td>
-    <td><strong>@(x.DiemTongKet?.ToString("0.00") ?? "-")</strong></td><td><span class="grade-letter grade-@(x.DiemChu?.ToLowerInvariant() ?? "none")">@(x.DiemChu ?? "-")</span></td>
-    <td><form id="@formId" action="/GiangVien/QuanLyDiem/Luu" method="post">@Html.AntiForgeryToken()<input type="hidden" name="lopHocId" value="@Model.LopHoc.Id"><input type="hidden" name="sinhVienId" value="@x.SinhVienId"><button class="btn btn-sm btn-primary"><i class="bi bi-floppy"></i> Lưu</button></form></td></tr>
+    <tr data-grade-row><td>@x.MaSinhVien</td><td><strong>@x.HoTen</strong></td>
+    <td><input type="number" form="@formId" name="diemChuyenCan" value="@x.DiemChuyenCan?.ToString(CultureInfo.InvariantCulture)" min="0" max="10" step="0.01" class="form-control form-control-sm grade-input"></td>
+    <td><input type="number" form="@formId" name="diemBaiTap" value="@x.DiemBaiTap?.ToString(CultureInfo.InvariantCulture)" min="0" max="10" step="0.01" class="form-control form-control-sm grade-input"></td>
+    <td><input type="number" form="@formId" name="diemGiuaKy" value="@x.DiemGiuaKy?.ToString(CultureInfo.InvariantCulture)" min="0" max="10" step="0.01" class="form-control form-control-sm grade-input"></td>
+    <td><input type="number" form="@formId" name="diemCuoiKy" value="@x.DiemCuoiKy?.ToString(CultureInfo.InvariantCulture)" min="0" max="10" step="0.01" class="form-control form-control-sm grade-input"></td>
+    <td><strong data-grade-total>@(x.DiemTongKet?.ToString("0.00") ?? "-")</strong><small class="grade-hint" data-grade-hint>@(x.DiemTongKet.HasValue ? "Đã lưu" : "Nhập đủ 4 cột")</small></td><td><span class="grade-letter grade-@(x.DiemChu?.ToLowerInvariant() ?? "none")" data-grade-letter>@(x.DiemChu ?? "-")</span></td>
+    <td><form id="@formId" action="/GiangVien/QuanLyDiem/Luu" method="post">@Html.AntiForgeryToken()<input type="hidden" name="lopHocId" value="@Model.LopHoc.Id"><input type="hidden" name="sinhVienId" value="@x.SinhVienId"><button class="btn btn-sm btn-primary text-nowrap"><i class="bi bi-calculator"></i> Tính &amp; lưu</button></form></td></tr>
 }
 </tbody></table></div></div></div>
