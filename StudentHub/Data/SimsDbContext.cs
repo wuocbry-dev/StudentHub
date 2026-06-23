@@ -35,6 +35,7 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
         b.Entity<PhongHoc>().HasIndex(x => x.MaPhong).IsUnique();
         b.Entity<LopHoc>().HasIndex(x => x.MaLop).IsUnique();
         b.Entity<DangKyHoc>().HasIndex(x => new { x.SinhVienId, x.LopHocId }).IsUnique();
+        b.Entity<DangKyHoc>().HasIndex(x => new { x.SinhVienId, x.HocKy, x.NamHoc, x.LaHocVuot });
         b.Entity<PhienDiemDanh>().HasIndex(x => x.MaPhien).IsUnique();
         b.Entity<PhienDiemDanh>().HasIndex(x => x.QrToken).IsUnique();
         b.Entity<DiemDanh>().HasIndex(x => new { x.PhienDiemDanhId, x.SinhVienId }).IsUnique();

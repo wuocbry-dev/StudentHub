@@ -6,12 +6,13 @@ using Microsoft.EntityFrameworkCore;
 using StudentHub.Data;
 using StudentHub.Models;
 using StudentHub.Services;
+using StudentHub.Services.HocVuot;
 
 namespace StudentHub.Controllers;
 
 [Authorize(Roles = "SinhVien")]
 [Route("SinhVien")]
-public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoService) : Controller
+public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoService, IGioiHanHocVuotService gioiHanHocVuotService) : Controller
 {
     [HttpGet("")]
     public IActionResult Index() => RedirectToAction(nameof(Dashboard));
@@ -266,6 +267,68 @@ public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoSe
             model.CoDuLieuDiemDanh = false;
         }
         return View(model);
+    }
+
+    [HttpGet("HocVuot")]
+    public async Task<IActionResult> HocVuot(string? hocKy = null, string? namHoc = null)
+    {
+        var sinhVien = await GetSinhVien().AsNoTracking().SingleOrDefaultAsync();
+        if (sinhVien == null) return View("ChuaLienKet");
+
+        var hocKyOptions = await db.LopHoc.AsNoTracking()
+            .Select(x => new SinhVienHocVuotHocKyOptionViewModel { HocKy = x.HocKy, NamHoc = x.NamHoc })
+            .Distinct()
+            .OrderByDescending(x => x.NamHoc)
+            .ThenByDescending(x => x.HocKy)
+            .ToListAsync();
+
+        if (hocKyOptions.Count == 0)
+        {
+            hocKyOptions.Add(new SinhVienHocVuotHocKyOptionViewModel
+            {
+                HocKy = "HK1",
+                NamHoc = $"{DateTime.Today.Year}-{DateTime.Today.Year + 1}"
+            });
+        }
+
+        if (string.IsNullOrWhiteSpace(hocKy) || string.IsNullOrWhiteSpace(namHoc)
+            || !hocKyOptions.Any(x => x.HocKy == hocKy && x.NamHoc == namHoc))
+        {
+            var macDinh = hocKyOptions.First();
+            hocKy = macDinh.HocKy;
+            namHoc = macDinh.NamHoc;
+        }
+
+        var soDaDangKy = await gioiHanHocVuotService.LaySoMonHocVuotDaDangKyAsync(sinhVien.Id, hocKy, namHoc);
+        var soToiDa = await gioiHanHocVuotService.LaySoMonHocVuotToiDaAsync(hocKy, namHoc);
+        var dangKyHocVuot = await db.DangKyHoc.AsNoTracking()
+            .Where(x => x.SinhVienId == sinhVien.Id
+                && x.LaHocVuot
+                && x.HocKy == hocKy
+                && x.NamHoc == namHoc
+                && x.TrangThai != TrangThaiDangKy.DaHuy
+                && x.TrangThai != TrangThaiDangKy.TuChoi)
+            .Include(x => x.LopHoc).ThenInclude(x => x!.MonHoc)
+            .OrderByDescending(x => x.NgayDangKy)
+            .Select(x => new SinhVienHocVuotItemViewModel
+            {
+                MaLop = x.LopHoc!.MaLop,
+                TenLop = x.LopHoc.TenLop,
+                TenMonHoc = x.LopHoc.MonHoc!.TenMonHoc,
+                NgayDangKy = x.NgayDangKy,
+                TrangThai = x.TrangThai
+            })
+            .ToListAsync();
+
+        return View(new SinhVienHocVuotViewModel
+        {
+            HocKy = hocKy,
+            NamHoc = namHoc,
+            SoMonHocVuotDaDangKy = soDaDangKy,
+            SoMonHocVuotToiDa = soToiDa,
+            HocKyOptions = hocKyOptions,
+            DangKyHocVuot = dangKyHocVuot
+        });
     }
 
     [HttpGet("CanhBao")]

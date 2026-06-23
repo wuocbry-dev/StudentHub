@@ -8,7 +8,7 @@ public enum TrangThaiTaiKhoan { HoatDong, Khoa }
 public enum TrangThaiSinhVien { DangHoc, BaoLuu, DaTotNghiep, ThoiHoc }
 public enum GioiTinh { Nam, Nu, Khac }
 public enum TrangThaiLopHoc { SapMo, DangHoc, DaKetThuc, DaHuy }
-public enum TrangThaiDangKy { ChoDuyet, DaDuyet, DaHuy }
+public enum TrangThaiDangKy { ChoDuyet, DaDuyet, TuChoi, DaHuy }
 public enum TrangThaiDiemDanh { CoMat, DiMuon, Vang, CoPhep }
 public enum LoaiCanhBao { ChuyenCanThap, DiemThap, TrungLichHoc, ThieuDiem }
 public enum MucDo { ThongTin, CanhBao, NguyHiem }
@@ -123,6 +123,9 @@ public class DangKyHoc
     public SinhVien? SinhVien { get; set; }
     [Required] public int LopHocId { get; set; }
     public LopHoc? LopHoc { get; set; }
+    [Required, StringLength(20)] public string HocKy { get; set; } = "";
+    [Required, StringLength(20)] public string NamHoc { get; set; } = "";
+    public bool LaHocVuot { get; set; }
     public DateTime NgayDangKy { get; set; } = DateTime.Now;
     public TrangThaiDangKy TrangThai { get; set; } = TrangThaiDangKy.ChoDuyet;
 }

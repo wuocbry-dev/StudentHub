@@ -13,7 +13,7 @@ public static class AdminUiMetadata
         [typeof(PhongHoc)] = [C("MaPhong"), C("TenPhong"), C("SucChua"), C("ViTri")],
         [typeof(LopHoc)] = [C("MaLop"), C("TenLop"), C("MonHoc.MaMonHoc", "Mã môn học"), C("MonHoc.TenMonHoc", "Tên môn học"), C("GiangVien.MaGiangVien", "Mã giảng viên"), C("GiangVien.HoTen", "Tên giảng viên"), C("HocKy"), C("NamHoc"), C("SoLuongToiDa"), C("TrangThai")],
         [typeof(LichHoc)] = [C("LopHoc.MaLop", "Mã lớp"), C("LopHoc.TenLop", "Tên lớp"), C("PhongHoc.MaPhong", "Mã phòng"), C("PhongHoc.TenPhong", "Tên phòng"), C("ThuTrongTuan"), C("GioBatDau"), C("GioKetThuc"), C("NgayBatDau"), C("NgayKetThuc")],
-        [typeof(DangKyHoc)] = [C("SinhVien.MaSinhVien", "Mã sinh viên"), C("SinhVien.HoTen", "Tên sinh viên"), C("LopHoc.MaLop", "Mã lớp"), C("LopHoc.TenLop", "Tên lớp"), C("NgayDangKy"), C("TrangThai")],
+        [typeof(DangKyHoc)] = [C("SinhVien.MaSinhVien", "Mã sinh viên"), C("SinhVien.HoTen", "Tên sinh viên"), C("LopHoc.MaLop", "Mã lớp"), C("LopHoc.TenLop", "Tên lớp"), C("HocKy"), C("NamHoc"), C("LaHocVuot"), C("NgayDangKy"), C("TrangThai")],
         [typeof(TaiKhoan)] = [C("TenDangNhap"), C("HoTen"), C("Email"), C("VaiTro"), C("TrangThai"), C("NgayTao")]
     });
 
@@ -29,6 +29,7 @@ public static class AdminUiMetadata
         ["PhongHoc"] = "Phòng học", ["PhongHocId"] = "Phòng học", ["ThuTrongTuan"] = "Thứ trong tuần",
         ["GioBatDau"] = "Giờ bắt đầu", ["GioKetThuc"] = "Giờ kết thúc", ["NgayBatDau"] = "Ngày bắt đầu", ["NgayKetThuc"] = "Ngày kết thúc",
         ["SinhVien"] = "Sinh viên", ["SinhVienId"] = "Sinh viên", ["NgayDangKy"] = "Ngày đăng ký",
+        ["LaHocVuot"] = "Học vượt",
         ["HoTen"] = "Họ tên", ["Email"] = "Email", ["SoDienThoai"] = "Số điện thoại", ["NgaySinh"] = "Ngày sinh",
         ["GioiTinh"] = "Giới tính", ["DiaChi"] = "Địa chỉ", ["Khoa"] = "Khoa", ["KhoaId"] = "Khoa",
         ["TaiKhoanId"] = "Tài khoản", ["HocVi"] = "Học vị", ["TrangThai"] = "Trạng thái", ["NgayTao"] = "Ngày tạo",

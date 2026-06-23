@@ -129,3 +129,33 @@ public class SinhVienChuyenCanItemViewModel
     public double? TyLeChuyenCan { get; set; }
     public bool ChuyenCanThap => TyLeChuyenCan < 70;
 }
+
+public class SinhVienHocVuotViewModel
+{
+    public string HocKy { get; set; } = "";
+    public string NamHoc { get; set; } = "";
+    public int SoMonHocVuotDaDangKy { get; set; }
+    public int SoMonHocVuotToiDa { get; set; } = 5;
+    public List<SinhVienHocVuotHocKyOptionViewModel> HocKyOptions { get; set; } = [];
+    public List<SinhVienHocVuotItemViewModel> DangKyHocVuot { get; set; } = [];
+    public bool DaDatGioiHan => SoMonHocVuotDaDangKy >= SoMonHocVuotToiDa;
+    public int SoMonConLai => Math.Max(0, SoMonHocVuotToiDa - SoMonHocVuotDaDangKy);
+    public int PhanTram => SoMonHocVuotToiDa <= 0 ? 0 : Math.Min(100, SoMonHocVuotDaDangKy * 100 / SoMonHocVuotToiDa);
+    public string ProgressClass => DaDatGioiHan ? "bg-danger" : SoMonHocVuotDaDangKy >= SoMonHocVuotToiDa - 1 ? "bg-warning" : "bg-success";
+}
+
+public class SinhVienHocVuotHocKyOptionViewModel
+{
+    public string HocKy { get; set; } = "";
+    public string NamHoc { get; set; } = "";
+    public string Label => $"{HocKy} - {NamHoc}";
+}
+
+public class SinhVienHocVuotItemViewModel
+{
+    public string MaLop { get; set; } = "";
+    public string TenLop { get; set; } = "";
+    public string TenMonHoc { get; set; } = "";
+    public DateTime NgayDangKy { get; set; }
+    public TrangThaiDangKy TrangThai { get; set; }
+}

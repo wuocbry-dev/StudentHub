@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentHub.Data;
 
@@ -11,9 +12,11 @@ using StudentHub.Data;
 namespace StudentHub.Migrations
 {
     [DbContext(typeof(SimsDbContext))]
-    partial class SimsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260623081431_AddGioiHanHocVuot")]
+    partial class AddGioiHanHocVuot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

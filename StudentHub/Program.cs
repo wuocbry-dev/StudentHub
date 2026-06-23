@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using StudentHub.Data;
 using StudentHub.Services;
+using StudentHub.Services.HocVuot;
 
 namespace StudentHub
 {
@@ -14,6 +15,7 @@ namespace StudentHub
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddScoped<CanhBaoHocTapService>();
+            builder.Services.AddScoped<IGioiHanHocVuotService, GioiHanHocVuotService>();
             builder.Services.AddDbContext<SimsDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("SimsConnection")));
             builder.Services.AddDistributedMemoryCache();

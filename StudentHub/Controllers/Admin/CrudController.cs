@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudentHub.Data;
 using StudentHub.Models;
+using StudentHub.Services.HocVuot;
 
 namespace StudentHub.Controllers.Admin;
 
@@ -52,7 +53,8 @@ public abstract class CrudController<TEntity>(SimsDbContext db, string title) : 
         var entity = new TEntity();
         BindForm(entity, form);
         if (entity is TaiKhoan tk) tk.MatKhauHash = HashPassword(tk, form["MatKhau"]!);
-        if (Validate(entity, form))
+        var entityValid = await ValidateEntityAsync(entity, form);
+        if (Validate(entity, form) && entityValid)
         {
             db.Add(entity);
             if (await Save()) return RedirectSuccess("Thêm dữ liệu thành công.");
@@ -76,7 +78,8 @@ public abstract class CrudController<TEntity>(SimsDbContext db, string title) : 
         if (entity == null) return NotFound();
         BindForm(entity, form);
         if (entity is TaiKhoan tk && !string.IsNullOrWhiteSpace(form["MatKhau"])) tk.MatKhauHash = HashPassword(tk, form["MatKhau"]!);
-        if (Validate(entity, form) && await Save()) return RedirectSuccess("Cập nhật dữ liệu thành công.");
+        var entityValid = await ValidateEntityAsync(entity, form);
+        if (Validate(entity, form) && entityValid && await Save()) return RedirectSuccess("Cập nhật dữ liệu thành công.");
         await LoadOptions();
         return View("~/Views/Admin/Crud/Edit.cshtml", new CrudEditViewModel { EntityType = typeof(TEntity), Title = title, Entity = entity, IsEdit = true });
     }
@@ -107,6 +110,7 @@ public abstract class CrudController<TEntity>(SimsDbContext db, string title) : 
         { ModelState.AddModelError("MatKhau", "Vui lòng nhập mật khẩu."); valid = false; }
         return valid;
     }
+    protected virtual Task<bool> ValidateEntityAsync(TEntity entity, IFormCollection form) => Task.FromResult(true);
     private static string HashPassword(TaiKhoan user, string password) => new PasswordHasher<TaiKhoan>().HashPassword(user, password);
 
     private static void BindForm(TEntity entity, IFormCollection form)
@@ -114,12 +118,17 @@ public abstract class CrudController<TEntity>(SimsDbContext db, string title) : 
         foreach (var p in typeof(TEntity).GetProperties().Where(IsEditable))
         {
             var raw = form[p.Name].ToString().Trim();
+            var t = Nullable.GetUnderlyingType(p.PropertyType) ?? p.PropertyType;
+            if (t == typeof(bool))
+            {
+                p.SetValue(entity, form.ContainsKey(p.Name) && bool.TryParse(raw, out var value) && value);
+                continue;
+            }
             if (p.PropertyType == typeof(string) && p.Name.StartsWith("Ma", StringComparison.Ordinal))
                 raw = raw.ToUpperInvariant();
             if (string.IsNullOrWhiteSpace(raw)) { if (Nullable.GetUnderlyingType(p.PropertyType) != null || p.PropertyType == typeof(string)) p.SetValue(entity, null); continue; }
             try
             {
-                var t = Nullable.GetUnderlyingType(p.PropertyType) ?? p.PropertyType;
                 object value = t.IsEnum ? Enum.Parse(t, raw) : t == typeof(TimeSpan) ? TimeSpan.Parse(raw, CultureInfo.InvariantCulture) : Convert.ChangeType(raw, t, CultureInfo.InvariantCulture);
                 p.SetValue(entity, value);
             }
@@ -147,5 +156,71 @@ public class MonHocController(SimsDbContext db) : CrudController<MonHoc>(db, "M�
 public class PhongHocController(SimsDbContext db) : CrudController<PhongHoc>(db, "Phòng học") { }
 public class LopHocController(SimsDbContext db) : CrudController<LopHoc>(db, "Lớp học") { }
 public class LichHocController(SimsDbContext db) : CrudController<LichHoc>(db, "Lịch học") { }
-public class DangKyHocController(SimsDbContext db) : CrudController<DangKyHoc>(db, "Đăng ký học") { }
+public class DangKyHocController(SimsDbContext db, IGioiHanHocVuotService gioiHanHocVuotService) : CrudController<DangKyHoc>(db, "Đăng ký học")
+{
+    protected override async Task<bool> ValidateEntityAsync(DangKyHoc entity, IFormCollection form)
+    {
+        var valid = true;
+        var lopHoc = await Db.LopHoc.AsNoTracking().SingleOrDefaultAsync(x => x.Id == entity.LopHocId);
+        if (lopHoc == null)
+        {
+            ModelState.AddModelError(nameof(DangKyHoc.LopHocId), "Lop hoc khong ton tai.");
+            valid = false;
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(entity.HocKy)) entity.HocKy = lopHoc.HocKy;
+            if (string.IsNullOrWhiteSpace(entity.NamHoc)) entity.NamHoc = lopHoc.NamHoc;
+
+            var soDaDangKyLop = await Db.DangKyHoc.CountAsync(x => x.LopHocId == entity.LopHocId
+                && x.Id != entity.Id
+                && x.TrangThai != TrangThaiDangKy.DaHuy
+                && x.TrangThai != TrangThaiDangKy.TuChoi);
+            if (soDaDangKyLop >= lopHoc.SoLuongToiDa)
+            {
+                ModelState.AddModelError(nameof(DangKyHoc.LopHocId), "Lop hoc da du so luong.");
+                valid = false;
+            }
+        }
+
+        if (!await Db.SinhVien.AnyAsync(x => x.Id == entity.SinhVienId))
+        {
+            ModelState.AddModelError(nameof(DangKyHoc.SinhVienId), "Sinh vien khong ton tai.");
+            valid = false;
+        }
+
+        if (string.IsNullOrWhiteSpace(entity.HocKy))
+        {
+            ModelState.AddModelError(nameof(DangKyHoc.HocKy), "Hoc ky khong duoc trong.");
+            valid = false;
+        }
+
+        if (string.IsNullOrWhiteSpace(entity.NamHoc))
+        {
+            ModelState.AddModelError(nameof(DangKyHoc.NamHoc), "Nam hoc khong duoc trong.");
+            valid = false;
+        }
+
+        if (entity.LaHocVuot && entity.TrangThai is not (TrangThaiDangKy.DaHuy or TrangThaiDangKy.TuChoi))
+        {
+            var soDaDangKy = await gioiHanHocVuotService.LaySoMonHocVuotDaDangKyAsync(entity.SinhVienId, entity.HocKy, entity.NamHoc);
+            var soToiDa = await gioiHanHocVuotService.LaySoMonHocVuotToiDaAsync(entity.HocKy, entity.NamHoc);
+            var dangSuaBanGhiDangDuocTinh = entity.Id > 0 && await Db.DangKyHoc.AsNoTracking().AnyAsync(x => x.Id == entity.Id
+                && x.LaHocVuot
+                && x.SinhVienId == entity.SinhVienId
+                && x.HocKy == entity.HocKy
+                && x.NamHoc == entity.NamHoc
+                && x.TrangThai != TrangThaiDangKy.DaHuy
+                && x.TrangThai != TrangThaiDangKy.TuChoi);
+
+            if (!dangSuaBanGhiDangDuocTinh && soDaDangKy >= soToiDa)
+            {
+                ModelState.AddModelError(nameof(DangKyHoc.LaHocVuot), await gioiHanHocVuotService.LayThongBaoGioiHanAsync(entity.SinhVienId, entity.HocKy, entity.NamHoc));
+                valid = false;
+            }
+        }
+
+        return valid;
+    }
+}
 public class TaiKhoanController(SimsDbContext db) : CrudController<TaiKhoan>(db, "Tài khoản") { }
