@@ -1,0 +1,112 @@
+@model AdminGoiYHocVuotPageViewModel
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Goi y hoc vuot";
+}
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/css/hocvuot.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Goi y hoc vuot</h1>
+        <div class="text-muted">Quan ly va tao lai goi y hoc vuot bang rule-based logic.</div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Khoa</label>
+                <select name="khoaId" class="form-select">
+                    <option value="">Tat ca</option>
+                    @foreach (var khoa in Model.KhoaOptions)
+                    {
+                        <option value="@khoa.Id" selected="@(khoa.Id == Model.KhoaId)">@khoa.MaKhoa - @khoa.TenKhoa</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Sinh vien</label>
+                <select name="sinhVienId" class="form-select">
+                    <option value="">Tat ca</option>
+                    @foreach (var sv in Model.SinhVienOptions)
+                    {
+                        <option value="@sv.Id" selected="@(sv.Id == Model.SinhVienId)">@sv.MaSinhVien - @sv.HoTen</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Hoc ky - Nam hoc</label>
+                <select class="form-select" name="hocKyNamHoc" onchange="this.form.querySelector('[name=hocKy]').value=this.selectedOptions[0].dataset.hocky || '';this.form.querySelector('[name=namHoc]').value=this.selectedOptions[0].dataset.namhoc || ''">
+                    <option value="" data-hocky="" data-namhoc="">Tat ca</option>
+                    @foreach (var option in Model.HocKyOptions)
+                    {
+                        <option data-hocky="@option.HocKy" data-namhoc="@option.NamHoc" selected="@(option.HocKy == Model.HocKy && option.NamHoc == Model.NamHoc)">@option.Label</option>
+                    }
+                </select>
+                <input type="hidden" name="hocKy" value="@Model.HocKy" />
+                <input type="hidden" name="namHoc" value="@Model.NamHoc" />
+            </div>
+            <div class="col-auto"><button class="btn btn-dark"><i class="bi bi-funnel"></i> Loc</button></div>
+        </form>
+        <form action="/Admin/GoiYHocVuot/TaoLai" method="post" class="mt-3" data-hocvuot-confirm="Tao lai goi y hoc vuot theo bo loc hien tai?">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="khoaId" value="@Model.KhoaId" />
+            <input type="hidden" name="sinhVienId" value="@Model.SinhVienId" />
+            <input type="hidden" name="hocKy" value="@Model.HocKy" />
+            <input type="hidden" name="namHoc" value="@Model.NamHoc" />
+            <button class="btn btn-primary" data-hocvuot-loading><i class="bi bi-arrow-repeat"></i> Tao lai goi y</button>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="goiYHocVuotTable">
+            <thead><tr><th>Ma sinh vien</th><th>Ho ten</th><th>Mon hoc duoc goi y</th><th>Lop hoc</th><th>Diem phu hop</th><th>Muc do</th><th>Ly do</th><th>Trang thai</th><th>Ngay tao</th></tr></thead>
+            <tbody>
+            @if (Model.GoiY.Count == 0)
+            {
+                <tr><td colspan="9" class="text-center text-muted py-5">Chua co goi y hoc vuot.</td></tr>
+            }
+            else
+            {
+                @foreach (var item in Model.GoiY)
+                {
+                    <tr>
+                        <td><strong>@item.MaSinhVien</strong><small class="d-block text-muted">@item.TenKhoa</small></td>
+                        <td>@item.HoTenSinhVien</td>
+                        <td><strong>@item.MaMonHoc</strong><small class="d-block text-muted">@item.TenMonHoc</small></td>
+                        <td><span class="class-code">@item.MaLop</span><small class="d-block text-muted">@item.HocKyGoiY - @item.NamHocGoiY</small></td>
+                        <td><div class="progress hocvuot-score-progress"><div class="progress-bar" style="width:@((int)item.DiemPhuHop)%">@item.DiemPhuHop.ToString("0.#")</div></div></td>
+                        <td><span class="badge @MucDoBadge(item.MucDoGoiY)">@item.MucDoGoiY</span></td>
+                        <td class="small">@item.LyDoGoiY</td>
+                        <td><span class="badge text-bg-secondary">@item.TrangThai</span></td>
+                        <td>@item.NgayTao.ToString("dd/MM/yyyy")</td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@functions {
+    string MucDoBadge(MucDoGoiY value) => value switch
+    {
+        MucDoGoiY.RatPhuHop => "text-bg-success",
+        MucDoGoiY.PhuHop => "text-bg-primary",
+        MucDoGoiY.CanCanNhac => "text-bg-warning",
+        _ => "text-bg-danger"
+    };
+}
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script>
+    <script src="~/js/hocvuot.js" asp-append-version="true"></script>
+}

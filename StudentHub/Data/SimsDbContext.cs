@@ -10,6 +10,7 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
     public DbSet<SinhVien> SinhVien => Set<SinhVien>();
     public DbSet<GiangVien> GiangVien => Set<GiangVien>();
     public DbSet<MonHoc> MonHoc => Set<MonHoc>();
+    public DbSet<MonHocTienQuyet> MonHocTienQuyet => Set<MonHocTienQuyet>();
     public DbSet<PhongHoc> PhongHoc => Set<PhongHoc>();
     public DbSet<LopHoc> LopHoc => Set<LopHoc>();
     public DbSet<LichHoc> LichHoc => Set<LichHoc>();
@@ -17,6 +18,7 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
     public DbSet<PhienDiemDanh> PhienDiemDanh => Set<PhienDiemDanh>();
     public DbSet<DiemDanh> DiemDanh => Set<DiemDanh>();
     public DbSet<BangDiem> BangDiem => Set<BangDiem>();
+    public DbSet<GoiYHocVuot> GoiYHocVuot => Set<GoiYHocVuot>();
     public DbSet<CanhBaoSinhVien> CanhBaoSinhVien => Set<CanhBaoSinhVien>();
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -32,6 +34,7 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
         b.Entity<SinhVien>().HasIndex(x => x.MaSinhVien).IsUnique();
         b.Entity<GiangVien>().HasIndex(x => x.MaGiangVien).IsUnique();
         b.Entity<MonHoc>().HasIndex(x => x.MaMonHoc).IsUnique();
+        b.Entity<MonHocTienQuyet>().HasIndex(x => new { x.MonHocId, x.MonHocTienQuyetId }).IsUnique();
         b.Entity<PhongHoc>().HasIndex(x => x.MaPhong).IsUnique();
         b.Entity<LopHoc>().HasIndex(x => x.MaLop).IsUnique();
         b.Entity<DangKyHoc>().HasIndex(x => new { x.SinhVienId, x.LopHocId }).IsUnique();
@@ -40,6 +43,8 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
         b.Entity<PhienDiemDanh>().HasIndex(x => x.QrToken).IsUnique();
         b.Entity<DiemDanh>().HasIndex(x => new { x.PhienDiemDanhId, x.SinhVienId }).IsUnique();
         b.Entity<BangDiem>().HasIndex(x => new { x.SinhVienId, x.LopHocId }).IsUnique();
+        b.Entity<GoiYHocVuot>().HasIndex(x => new { x.SinhVienId, x.LopHocId, x.HocKyGoiY, x.NamHocGoiY }).IsUnique();
+        b.Entity<GoiYHocVuot>().HasIndex(x => new { x.HocKyGoiY, x.NamHocGoiY, x.MucDoGoiY, x.TrangThai });
         b.Entity<CanhBaoSinhVien>().HasIndex(x => new { x.SinhVienId, x.LopHocId, x.LoaiCanhBao })
             .IsUnique().HasFilter("[DaDoc] = 0");
         b.Entity<BangDiem>().Property(x => x.DiemChuyenCan).HasPrecision(4, 2);
@@ -47,6 +52,7 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
         b.Entity<BangDiem>().Property(x => x.DiemGiuaKy).HasPrecision(4, 2);
         b.Entity<BangDiem>().Property(x => x.DiemCuoiKy).HasPrecision(4, 2);
         b.Entity<BangDiem>().Property(x => x.DiemTongKet).HasPrecision(4, 2);
+        b.Entity<GoiYHocVuot>().Property(x => x.DiemPhuHop).HasPrecision(5, 2);
 
         foreach (var fk in b.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
             fk.DeleteBehavior = DeleteBehavior.Restrict;
@@ -55,10 +61,24 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
         b.Entity<SinhVien>().Property(x => x.GioiTinh).HasConversion<string>();
         b.Entity<SinhVien>().Property(x => x.TrangThai).HasConversion<string>();
         b.Entity<LopHoc>().Property(x => x.TrangThai).HasConversion<string>();
+        b.Entity<MonHocTienQuyet>().Property(x => x.MucDo).HasConversion<string>();
         b.Entity<DangKyHoc>().Property(x => x.TrangThai).HasConversion<string>();
         b.Entity<DiemDanh>().Property(x => x.TrangThai).HasConversion<string>();
+        b.Entity<GoiYHocVuot>().Property(x => x.MucDoGoiY).HasConversion<string>();
+        b.Entity<GoiYHocVuot>().Property(x => x.TrangThai).HasConversion<string>();
         b.Entity<CanhBaoSinhVien>().Property(x => x.LoaiCanhBao).HasConversion<string>();
         b.Entity<CanhBaoSinhVien>().Property(x => x.MucDo).HasConversion<string>();
+
+        b.Entity<MonHocTienQuyet>()
+            .HasOne(x => x.MonHoc)
+            .WithMany()
+            .HasForeignKey(x => x.MonHocId)
+            .OnDelete(DeleteBehavior.Restrict);
+        b.Entity<MonHocTienQuyet>()
+            .HasOne(x => x.MonHocTienQuyetCuaMon)
+            .WithMany()
+            .HasForeignKey(x => x.MonHocTienQuyetId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         var admin = new TaiKhoan
         {

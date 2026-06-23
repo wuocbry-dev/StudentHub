@@ -1,0 +1,120 @@
+@model SinhVienGoiYHocVuotPageViewModel
+@{
+    Layout = "~/Views/Shared/_SinhVienLayout.cshtml";
+    ViewData["Title"] = "Goi y hoc vuot";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hocvuot.css" asp-append-version="true" />
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-eyebrow">GOI Y HOC VUOT</span>
+        <h1>Mon hoc vuot phu hop</h1>
+        <p>Goi y dua tren GPA, mon tien quyet, lich hoc, lop con cho va gioi han 5 mon.</p>
+    </div>
+    <form method="get" class="d-flex align-items-end gap-2">
+        <div>
+            <label class="form-label small mb-1">Hoc ky</label>
+            <select class="form-select" name="hocKyNamHoc" onchange="this.form.querySelector('[name=hocKy]').value=this.selectedOptions[0].dataset.hocky;this.form.querySelector('[name=namHoc]').value=this.selectedOptions[0].dataset.namhoc">
+                @foreach (var option in Model.HocKyOptions)
+                {
+                    <option data-hocky="@option.HocKy" data-namhoc="@option.NamHoc" selected="@(option.HocKy == Model.HocKy && option.NamHoc == Model.NamHoc)">@option.Label</option>
+                }
+            </select>
+            <input type="hidden" name="hocKy" value="@Model.HocKy" />
+            <input type="hidden" name="namHoc" value="@Model.NamHoc" />
+        </div>
+        <button class="btn btn-primary"><i class="bi bi-funnel"></i></button>
+        <a class="btn btn-outline-primary" href="/SinhVien/GoiYHocVuot?hocKy=@Uri.EscapeDataString(Model.HocKy)&namHoc=@Uri.EscapeDataString(Model.NamHoc)&taoLai=true"><i class="bi bi-arrow-repeat"></i></a>
+    </form>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-purple"><span class="stat-icon"><i class="bi bi-award"></i></span><div><small>GPA hien tai</small><strong>@Model.Gpa.ToString("0.00")</strong><span>thang diem 10</span></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-green"><span class="stat-icon"><i class="bi bi-check2-circle"></i></span><div><small>Mon da hoc dat</small><strong>@Model.SoMonDaHocDat</strong><span>mon hoc</span></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-orange"><span class="stat-icon"><i class="bi bi-speedometer2"></i></span><div><small>Hoc vuot da dang ky</small><strong>@Model.SoMonHocVuotDaDangKy/@Model.SoMonHocVuotToiDa</strong><span>@Model.HocKy - @Model.NamHoc</span></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-blue"><span class="stat-icon"><i class="bi bi-lightbulb"></i></span><div><small>Goi y phu hop</small><strong>@Model.GoiY.Count</strong><span>mon hoc</span></div></div></div>
+</div>
+
+@if (Model.DaDatGioiHan)
+{
+    <div class="alert alert-danger border-0 shadow-sm" data-hocvuot-limit data-hocvuot-full="true">
+        <i class="bi bi-exclamation-triangle me-2"></i>Ban da dat gioi han @Model.SoMonHocVuotToiDa/@Model.SoMonHocVuotToiDa mon hoc vuot trong hoc ky nay.
+    </div>
+}
+
+@if (Model.GoiY.Count == 0)
+{
+    <section class="student-panel">
+        <div class="student-empty">
+            <i class="bi bi-lightbulb"></i>
+            <strong>Chua co goi y hoc vuot phu hop.</strong>
+            <span>He thong se khong goi y neu GPA chua phu hop, thieu mon tien quyet, trung lich, lop day hoac da du 5 mon hoc vuot.</span>
+        </div>
+    </section>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var item in Model.GoiY)
+        {
+            <div class="col-lg-6 col-xxl-4">
+                <article class="student-panel hocvuot-suggestion-card h-100">
+                    <div class="hocvuot-card-head">
+                        <span class="badge @MucDoBadge(item.MucDoGoiY)">@item.MucDoGoiY</span>
+                        <span class="class-code">@item.MaLop</span>
+                    </div>
+                    <h2>@item.TenMonHoc</h2>
+                    <p class="text-muted mb-2">@item.MaMonHoc · @item.SoTinChi tin chi</p>
+                    <div class="hocvuot-card-meta">
+                        <span><i class="bi bi-person-workspace"></i> @item.GiangVien</span>
+                        <span><i class="bi bi-calendar-week"></i> @item.LichHoc</span>
+                    </div>
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between small fw-semibold mb-1"><span>Diem phu hop</span><span>@item.DiemPhuHop.ToString("0.#")/100</span></div>
+                        <div class="progress hocvuot-score-progress"><div class="progress-bar @ProgressClass(item.MucDoGoiY)" style="width:@((int)item.DiemPhuHop)%"></div></div>
+                    </div>
+                    <p class="hocvuot-reason">@item.LyDoGoiY</p>
+                    <div class="d-flex gap-2 mt-auto">
+                        <form action="/SinhVien/GoiYHocVuot/DangKy/@item.Id" method="post" class="flex-fill" data-hocvuot-confirm="Dang ky lop @item.MaLop?">
+                            @Html.AntiForgeryToken()
+                            <button class="btn btn-primary w-100" disabled="@(Model.DaDatGioiHan || item.DaDatGioiHan || item.TrangThai == TrangThaiGoiY.DaDangKy)">
+                                <i class="bi bi-plus-circle"></i> Dang ky
+                            </button>
+                        </form>
+                        <form action="/SinhVien/GoiYHocVuot/BoQua/@item.Id" method="post" class="flex-fill" data-hocvuot-confirm="Bo qua goi y nay?">
+                            @Html.AntiForgeryToken()
+                            <button class="btn btn-outline-secondary w-100" disabled="@(item.TrangThai == TrangThaiGoiY.DaDangKy)">
+                                <i class="bi bi-x-circle"></i> Bo qua
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            </div>
+        }
+    </div>
+}
+
+@functions {
+    string MucDoBadge(MucDoGoiY value) => value switch
+    {
+        MucDoGoiY.RatPhuHop => "text-bg-success",
+        MucDoGoiY.PhuHop => "text-bg-primary",
+        MucDoGoiY.CanCanNhac => "text-bg-warning",
+        _ => "text-bg-danger"
+    };
+
+    string ProgressClass(MucDoGoiY value) => value switch
+    {
+        MucDoGoiY.RatPhuHop => "bg-success",
+        MucDoGoiY.PhuHop => "bg-primary",
+        MucDoGoiY.CanCanNhac => "bg-warning",
+        _ => "bg-danger"
+    };
+}
+
+@section Scripts {
+    <script src="~/js/hocvuot.js" asp-append-version="true"></script>
+}

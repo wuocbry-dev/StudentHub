@@ -1,0 +1,134 @@
+@model AdminMonHocTienQuyetPageViewModel
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Mon hoc tien quyet";
+}
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/css/hocvuot.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Quan ly mon hoc tien quyet</h1>
+        <div class="text-muted">Thiet lap mon can hoc truoc de goi y hoc vuot dung luat.</div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white fw-semibold">@(Model.Form.Id == 0 ? "Them mon tien quyet" : "Sua mon tien quyet")</div>
+            <div class="card-body">
+                <form action="/Admin/MonHocTienQuyet/Luu" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Id" value="@Model.Form.Id" />
+                    <input type="hidden" name="search" value="@Model.Search" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+                    <div class="mb-3">
+                        <label class="form-label">Mon hoc</label>
+                        <select name="MonHocId" class="form-select" required>
+                            <option value="">-- Chon mon hoc --</option>
+                            @foreach (var mon in Model.MonHocOptions)
+                            {
+                                <option value="@mon.Id" selected="@(mon.Id == Model.Form.MonHocId)">@mon.MaMonHoc - @mon.TenMonHoc</option>
+                            }
+                        </select>
+                        <span class="text-danger small">@Html.ValidationMessage("MonHocId")</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mon tien quyet</label>
+                        <select name="MonHocTienQuyetId" class="form-select" required>
+                            <option value="">-- Chon mon tien quyet --</option>
+                            @foreach (var mon in Model.MonHocOptions)
+                            {
+                                <option value="@mon.Id" selected="@(mon.Id == Model.Form.MonHocTienQuyetId)">@mon.MaMonHoc - @mon.TenMonHoc</option>
+                            }
+                        </select>
+                        <span class="text-danger small">@Html.ValidationMessage("MonHocTienQuyetId")</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label">Muc do</label>
+                            <select name="MucDo" class="form-select">
+                                @foreach (var value in Enum.GetValues<MucDoTienQuyet>())
+                                {
+                                    <option value="@value" selected="@(value == Model.Form.MucDo)">@value</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-sm-6 d-flex align-items-end">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="BatBuoc" value="true" id="BatBuoc" checked="@(Model.Form.BatBuoc ? "checked" : null)" />
+                                <label class="form-check-label" for="BatBuoc">Bat buoc</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chu</label>
+                        <textarea name="GhiChu" class="form-control" rows="3">@Model.Form.GhiChu</textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary"><i class="bi bi-save"></i> Luu</button>
+                        @if (Model.Form.Id != 0)
+                        {
+                            <a href="/Admin/MonHocTienQuyet" class="btn btn-light">Huy sua</a>
+                        }
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body border-bottom">
+                <form method="get" class="row g-2">
+                    <div class="col-md-8"><input class="form-control" name="search" value="@Model.Search" placeholder="Tim theo ma mon hoc hoac ten mon hoc" /></div>
+                    <div class="col-auto"><button class="btn btn-dark"><i class="bi bi-search"></i> Tim</button></div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Search))
+                    {
+                        <div class="col-auto"><a class="btn btn-light" href="/Admin/MonHocTienQuyet">Xoa loc</a></div>
+                    }
+                </form>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="monHocTienQuyetTable">
+                    <thead><tr><th>Mon hoc</th><th>Mon tien quyet</th><th>Bat buoc</th><th>Muc do</th><th>Ghi chu</th><th class="text-end">Thao tac</th></tr></thead>
+                    <tbody>
+                    @if (Model.Items.Count == 0)
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-5">Chua co cau hinh mon tien quyet.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td><strong>@item.MonHoc?.MaMonHoc</strong><small class="d-block text-muted">@item.MonHoc?.TenMonHoc</small></td>
+                                <td><strong>@item.MonHocTienQuyetCuaMon?.MaMonHoc</strong><small class="d-block text-muted">@item.MonHocTienQuyetCuaMon?.TenMonHoc</small></td>
+                                <td><span class="badge @(item.BatBuoc ? "text-bg-danger" : "text-bg-secondary")">@(item.BatBuoc ? "BatBuoc" : "KhuyenNghi")</span></td>
+                                <td><span class="badge text-bg-info">@item.MucDo</span></td>
+                                <td>@(item.GhiChu ?? "-")</td>
+                                <td class="text-end text-nowrap">
+                                    <a class="btn btn-sm btn-outline-primary" href="/Admin/MonHocTienQuyet?editId=@item.Id&search=@Uri.EscapeDataString(Model.Search)"><i class="bi bi-pencil"></i></a>
+                                    <form action="/Admin/MonHocTienQuyet/Xoa/@item.Id" method="post" class="d-inline" data-hocvuot-confirm="Xoa cau hinh mon tien quyet nay?">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script>
+    <script src="~/js/hocvuot.js" asp-append-version="true"></script>
+}

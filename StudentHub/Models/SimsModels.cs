@@ -12,6 +12,9 @@ public enum TrangThaiDangKy { ChoDuyet, DaDuyet, TuChoi, DaHuy }
 public enum TrangThaiDiemDanh { CoMat, DiMuon, Vang, CoPhep }
 public enum LoaiCanhBao { ChuyenCanThap, DiemThap, TrungLichHoc, ThieuDiem }
 public enum MucDo { ThongTin, CanhBao, NguyHiem }
+public enum MucDoTienQuyet { BatBuoc, KhuyenNghi, NenHocTruoc }
+public enum MucDoGoiY { RatPhuHop, PhuHop, CanCanNhac, KhongPhuHop }
+public enum TrangThaiGoiY { Moi, DaXem, DaDangKy, DaBoQua, HetHan }
 
 public class TaiKhoan
 {
@@ -76,6 +79,19 @@ public class MonHoc
     [Required] public int KhoaId { get; set; }
     public Khoa? Khoa { get; set; }
     [StringLength(500)] public string? MoTa { get; set; }
+}
+
+public class MonHocTienQuyet
+{
+    public int Id { get; set; }
+    [Required] public int MonHocId { get; set; }
+    public MonHoc? MonHoc { get; set; }
+    [Required] public int MonHocTienQuyetId { get; set; }
+    public MonHoc? MonHocTienQuyetCuaMon { get; set; }
+    public bool BatBuoc { get; set; } = true;
+    public MucDoTienQuyet MucDo { get; set; } = MucDoTienQuyet.BatBuoc;
+    [StringLength(500)] public string? GhiChu { get; set; }
+    public DateTime NgayTao { get; set; } = DateTime.Now;
 }
 
 public class PhongHoc
@@ -171,6 +187,25 @@ public class BangDiem
     [Range(0, 10)] public decimal? DiemCuoiKy { get; set; }
     [Range(0, 10)] public decimal? DiemTongKet { get; set; }
     [StringLength(1)] public string? DiemChu { get; set; }
+    public DateTime NgayCapNhat { get; set; } = DateTime.Now;
+}
+
+public class GoiYHocVuot
+{
+    public int Id { get; set; }
+    [Required] public int SinhVienId { get; set; }
+    public SinhVien? SinhVien { get; set; }
+    [Required] public int MonHocId { get; set; }
+    public MonHoc? MonHoc { get; set; }
+    [Required] public int LopHocId { get; set; }
+    public LopHoc? LopHoc { get; set; }
+    [Required, StringLength(20)] public string HocKyGoiY { get; set; } = "";
+    [Required, StringLength(20)] public string NamHocGoiY { get; set; } = "";
+    [Range(0, 100)] public decimal DiemPhuHop { get; set; }
+    [Required, StringLength(1000)] public string LyDoGoiY { get; set; } = "";
+    public MucDoGoiY MucDoGoiY { get; set; } = MucDoGoiY.PhuHop;
+    public TrangThaiGoiY TrangThai { get; set; } = TrangThaiGoiY.Moi;
+    public DateTime NgayTao { get; set; } = DateTime.Now;
     public DateTime NgayCapNhat { get; set; } = DateTime.Now;
 }
 

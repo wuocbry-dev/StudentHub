@@ -16,6 +16,7 @@ namespace StudentHub
             builder.Services.AddControllersWithViews();
             builder.Services.AddScoped<CanhBaoHocTapService>();
             builder.Services.AddScoped<IGioiHanHocVuotService, GioiHanHocVuotService>();
+            builder.Services.AddScoped<IGoiYHocVuotService, GoiYHocVuotService>();
             builder.Services.AddDbContext<SimsDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("SimsConnection")));
             builder.Services.AddDistributedMemoryCache();
