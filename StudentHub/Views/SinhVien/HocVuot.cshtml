@@ -75,11 +75,64 @@
             </div>
         </div>
 
-        <button type="button" class="btn mt-4 @(Model.DaDatGioiHan ? "btn-secondary" : "btn-outline-primary")" disabled="@Model.DaDatGioiHan" data-hocvuot-register>
+        <button type="button" class="btn mt-4 @(Model.DaDatGioiHan ? "btn-secondary" : "btn-outline-primary")" disabled="@Model.DaDatGioiHan" data-hocvuot-register data-hocvuot-list-url="/SinhVien/HocVuot/LayDanhSachLopHocVuot" data-hocvuot-post-url="/SinhVien/HocVuot/DangKy" data-hocvuot-hocky="@Model.HocKy" data-hocvuot-namhoc="@Model.NamHoc">
             <i class="bi bi-plus-circle"></i> Đăng ký học vượt
         </button>
+        @Html.AntiForgeryToken()
     </div>
 </section>
+
+<div class="modal fade hocvuot-register-modal" id="hocVuotRegisterModal" tabindex="-1" aria-labelledby="hocVuotRegisterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title fs-5" id="hocVuotRegisterModalLabel">Đăng ký học vượt</h2>
+                    <p class="mb-0 text-muted small">Chọn lớp thuộc khoa của bạn trong @Model.HocKy - @Model.NamHoc.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3 align-items-end mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Học kỳ</label>
+                        <select class="form-select" data-hocvuot-modal-hocky>
+                            @foreach (var hocKyOption in Model.HocKyOptions.Select(x => x.HocKy).Distinct())
+                            {
+                                <option value="@hocKyOption" selected="@(hocKyOption == Model.HocKy)">@hocKyOption</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Năm học</label>
+                        <select class="form-select" data-hocvuot-modal-namhoc>
+                            @foreach (var namHocOption in Model.HocKyOptions.Select(x => x.NamHoc).Distinct())
+                            {
+                                <option value="@namHocOption" selected="@(namHocOption == Model.NamHoc)">@namHocOption</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tìm kiếm môn học</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input class="form-control" placeholder="Nhập mã lớp, mã môn hoặc tên môn" data-hocvuot-search />
+                        </div>
+                    </div>
+                </div>
+                <div class="hocvuot-modal-loading" data-hocvuot-loading hidden>
+                    <span class="spinner-border text-primary"></span>
+                    <strong>Đang tải danh sách lớp học vượt...</strong>
+                </div>
+                <div class="student-empty compact" data-hocvuot-empty hidden>
+                    <i class="bi bi-journal-x"></i>
+                    <strong>Không có lớp phù hợp trong học kỳ này.</strong>
+                </div>
+                <div class="hocvuot-class-list" data-hocvuot-class-list></div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <section class="student-panel">
     <div class="student-panel-header">

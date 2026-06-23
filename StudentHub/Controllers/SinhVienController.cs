@@ -13,7 +13,8 @@ namespace StudentHub.Controllers;
 [Authorize(Roles = "SinhVien")]
 [Route("SinhVien")]
 public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoService,
-    IGioiHanHocVuotService gioiHanHocVuotService, IGoiYHocVuotService goiYHocVuotService) : Controller
+    IGioiHanHocVuotService gioiHanHocVuotService, IGoiYHocVuotService goiYHocVuotService,
+    IDangKyHocVuotService dangKyHocVuotService) : Controller
 {
     [HttpGet("")]
     public IActionResult Index() => RedirectToAction(nameof(Dashboard));
@@ -334,6 +335,28 @@ public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoSe
             HocKyOptions = hocKyOptions,
             DangKyHocVuot = dangKyHocVuot
         });
+    }
+
+    [HttpGet("HocVuot/LayDanhSachLopHocVuot")]
+    public async Task<IActionResult> LayDanhSachLopHocVuot(string? hocKy = null, string? namHoc = null)
+    {
+        var sinhVienId = await GetSinhVien().Select(x => (int?)x.Id).SingleOrDefaultAsync();
+        if (sinhVienId == null) return Forbid();
+        if (string.IsNullOrWhiteSpace(hocKy) || string.IsNullOrWhiteSpace(namHoc))
+            return BadRequest(new { message = "Thiếu học kỳ hoặc năm học." });
+
+        var items = await dangKyHocVuotService.LayLopHocVuotCoTheDangKyAsync(sinhVienId.Value, hocKy, namHoc);
+        return Json(new { items });
+    }
+
+    [HttpPost("HocVuot/DangKy"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> DangKyHocVuot(int lopHocId, string hocKy, string namHoc)
+    {
+        var sinhVienId = await GetSinhVien().Select(x => (int?)x.Id).SingleOrDefaultAsync();
+        if (sinhVienId == null) return Forbid();
+
+        var result = await dangKyHocVuotService.DangKyHocVuotAsync(sinhVienId.Value, lopHocId, hocKy, namHoc);
+        return result.ThanhCong ? Ok(result) : BadRequest(result);
     }
 
     [HttpGet("GoiYHocVuot")]

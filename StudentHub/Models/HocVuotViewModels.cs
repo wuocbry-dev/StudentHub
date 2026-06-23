@@ -74,3 +74,49 @@ public class MonHocTienQuyetFormViewModel
     public MucDoTienQuyet MucDo { get; set; } = MucDoTienQuyet.BatBuoc;
     [StringLength(500)] public string? GhiChu { get; set; }
 }
+
+public class LopHocVuotDangKyViewModel
+{
+    public int LopHocId { get; set; }
+    public string MaLop { get; set; } = "";
+    public string TenLop { get; set; } = "";
+    public int MonHocId { get; set; }
+    public string MaMonHoc { get; set; } = "";
+    public string TenMonHoc { get; set; } = "";
+    public int SoTinChi { get; set; }
+    public string GiangVien { get; set; } = "";
+    public string PhongHoc { get; set; } = "";
+    public string LichHocText { get; set; } = "";
+    public string HocKy { get; set; } = "";
+    public string NamHoc { get; set; } = "";
+    public int SoLuongToiDa { get; set; }
+    public int SoLuongDaDangKy { get; set; }
+    public int SoChoConLai { get; set; }
+    public decimal GpaHienTai { get; set; }
+    public decimal GpaToiThieu { get; set; } = 6.5m;
+    public bool DaHocMonTienQuyet { get; set; }
+    public List<string> DanhSachMonTienQuyetThieu { get; set; } = [];
+    public bool DaDangKy { get; set; }
+    public bool BiTrungLich { get; set; }
+    public bool DaDuGioiHanHocVuot { get; set; }
+    public bool LopDaDay { get; set; }
+    public bool CoTheDangKy { get; set; }
+    public string LyDoKhongTheDangKy { get; set; } = "";
+    public decimal DiemPhuHop { get; set; }
+    public string MucDoPhuHop { get; set; } = "";
+}
+
+public class KetQuaKiemTraHocVuotViewModel
+{
+    public bool HopLe { get; set; }
+    public string ThongBao { get; set; } = "";
+    public List<string> DanhSachLoi { get; set; } = [];
+}
+
+public class KetQuaDangKyHocVuotViewModel
+{
+    public bool ThanhCong { get; set; }
+    public string ThongBao { get; set; } = "";
+    public int SoMonHocVuotDaDangKy { get; set; }
+    public int SoMonHocVuotToiDa { get; set; }
+}
