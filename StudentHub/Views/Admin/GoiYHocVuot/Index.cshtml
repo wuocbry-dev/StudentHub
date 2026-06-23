@@ -1,7 +1,7 @@
 @model AdminGoiYHocVuotPageViewModel
 @{
     Layout = "~/Views/Admin/_AdminLayout.cshtml";
-    ViewData["Title"] = "Goi y hoc vuot";
+    ViewData["Title"] = "Gợi ý học vượt";
 }
 @section Styles {
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css" />
@@ -10,8 +10,8 @@
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
-        <h1 class="h3 mb-1">Goi y hoc vuot</h1>
-        <div class="text-muted">Quan ly va tao lai goi y hoc vuot bang rule-based logic.</div>
+        <h1 class="h3 mb-1">Gợi ý học vượt</h1>
+        <div class="text-muted">Quản lý và tạo lại gợi ý học vượt bằng logic theo luật.</div>
     </div>
 </div>
 
@@ -21,7 +21,7 @@
             <div class="col-md-3">
                 <label class="form-label">Khoa</label>
                 <select name="khoaId" class="form-select">
-                    <option value="">Tat ca</option>
+                    <option value="">Tất cả</option>
                     @foreach (var khoa in Model.KhoaOptions)
                     {
                         <option value="@khoa.Id" selected="@(khoa.Id == Model.KhoaId)">@khoa.MaKhoa - @khoa.TenKhoa</option>
@@ -29,9 +29,9 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Sinh vien</label>
+                <label class="form-label">Sinh viên</label>
                 <select name="sinhVienId" class="form-select">
-                    <option value="">Tat ca</option>
+                    <option value="">Tất cả</option>
                     @foreach (var sv in Model.SinhVienOptions)
                     {
                         <option value="@sv.Id" selected="@(sv.Id == Model.SinhVienId)">@sv.MaSinhVien - @sv.HoTen</option>
@@ -39,9 +39,9 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Hoc ky - Nam hoc</label>
+                <label class="form-label">Học kỳ - Năm học</label>
                 <select class="form-select" name="hocKyNamHoc" onchange="this.form.querySelector('[name=hocKy]').value=this.selectedOptions[0].dataset.hocky || '';this.form.querySelector('[name=namHoc]').value=this.selectedOptions[0].dataset.namhoc || ''">
-                    <option value="" data-hocky="" data-namhoc="">Tat ca</option>
+                    <option value="" data-hocky="" data-namhoc="">Tất cả</option>
                     @foreach (var option in Model.HocKyOptions)
                     {
                         <option data-hocky="@option.HocKy" data-namhoc="@option.NamHoc" selected="@(option.HocKy == Model.HocKy && option.NamHoc == Model.NamHoc)">@option.Label</option>
@@ -50,15 +50,15 @@
                 <input type="hidden" name="hocKy" value="@Model.HocKy" />
                 <input type="hidden" name="namHoc" value="@Model.NamHoc" />
             </div>
-            <div class="col-auto"><button class="btn btn-dark"><i class="bi bi-funnel"></i> Loc</button></div>
+            <div class="col-auto"><button class="btn btn-dark"><i class="bi bi-funnel"></i> Lọc</button></div>
         </form>
-        <form action="/Admin/GoiYHocVuot/TaoLai" method="post" class="mt-3" data-hocvuot-confirm="Tao lai goi y hoc vuot theo bo loc hien tai?">
+        <form action="/Admin/GoiYHocVuot/TaoLai" method="post" class="mt-3" data-hocvuot-confirm="Tạo lại gợi ý học vượt theo bộ lọc hiện tại?">
             @Html.AntiForgeryToken()
             <input type="hidden" name="khoaId" value="@Model.KhoaId" />
             <input type="hidden" name="sinhVienId" value="@Model.SinhVienId" />
             <input type="hidden" name="hocKy" value="@Model.HocKy" />
             <input type="hidden" name="namHoc" value="@Model.NamHoc" />
-            <button class="btn btn-primary" data-hocvuot-loading><i class="bi bi-arrow-repeat"></i> Tao lai goi y</button>
+            <button class="btn btn-primary" data-hocvuot-loading><i class="bi bi-arrow-repeat"></i> Tạo lại gợi ý</button>
         </form>
     </div>
 </div>
@@ -66,11 +66,11 @@
 <div class="card border-0 shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0" id="goiYHocVuotTable">
-            <thead><tr><th>Ma sinh vien</th><th>Ho ten</th><th>Mon hoc duoc goi y</th><th>Lop hoc</th><th>Diem phu hop</th><th>Muc do</th><th>Ly do</th><th>Trang thai</th><th>Ngay tao</th></tr></thead>
+            <thead><tr><th>Mã sinh viên</th><th>Họ tên</th><th>Môn học được gợi ý</th><th>Lớp học</th><th>Điểm phù hợp</th><th>Mức độ</th><th>Lý do</th><th>Trạng thái</th><th>Ngày tạo</th></tr></thead>
             <tbody>
             @if (Model.GoiY.Count == 0)
             {
-                <tr><td colspan="9" class="text-center text-muted py-5">Chua co goi y hoc vuot.</td></tr>
+                <tr><td colspan="9" class="text-center text-muted py-5">Chưa có gợi ý học vượt.</td></tr>
             }
             else
             {
@@ -82,9 +82,9 @@
                         <td><strong>@item.MaMonHoc</strong><small class="d-block text-muted">@item.TenMonHoc</small></td>
                         <td><span class="class-code">@item.MaLop</span><small class="d-block text-muted">@item.HocKyGoiY - @item.NamHocGoiY</small></td>
                         <td><div class="progress hocvuot-score-progress"><div class="progress-bar" style="width:@((int)item.DiemPhuHop)%">@item.DiemPhuHop.ToString("0.#")</div></div></td>
-                        <td><span class="badge @MucDoBadge(item.MucDoGoiY)">@item.MucDoGoiY</span></td>
+                        <td><span class="badge hocvuot-prereq-badge @MucDoBadge(item.MucDoGoiY)">@MucDoText(item.MucDoGoiY)</span></td>
                         <td class="small">@item.LyDoGoiY</td>
-                        <td><span class="badge text-bg-secondary">@item.TrangThai</span></td>
+                        <td><span class="badge hocvuot-prereq-badge text-bg-secondary">@TrangThaiText(item.TrangThai)</span></td>
                         <td>@item.NgayTao.ToString("dd/MM/yyyy")</td>
                     </tr>
                 }
@@ -101,6 +101,25 @@
         MucDoGoiY.PhuHop => "text-bg-primary",
         MucDoGoiY.CanCanNhac => "text-bg-warning",
         _ => "text-bg-danger"
+    };
+
+    string MucDoText(MucDoGoiY value) => value switch
+    {
+        MucDoGoiY.RatPhuHop => "Rất phù hợp",
+        MucDoGoiY.PhuHop => "Phù hợp",
+        MucDoGoiY.CanCanNhac => "Cần cân nhắc",
+        MucDoGoiY.KhongPhuHop => "Không phù hợp",
+        _ => value.ToString()
+    };
+
+    string TrangThaiText(TrangThaiGoiY value) => value switch
+    {
+        TrangThaiGoiY.Moi => "Mới",
+        TrangThaiGoiY.DaXem => "Đã xem",
+        TrangThaiGoiY.DaDangKy => "Đã đăng ký",
+        TrangThaiGoiY.DaBoQua => "Đã bỏ qua",
+        TrangThaiGoiY.HetHan => "Hết hạn",
+        _ => value.ToString()
     };
 }
 

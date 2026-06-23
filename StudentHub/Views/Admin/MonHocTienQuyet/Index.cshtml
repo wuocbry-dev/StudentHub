@@ -1,7 +1,7 @@
 @model AdminMonHocTienQuyetPageViewModel
 @{
     Layout = "~/Views/Admin/_AdminLayout.cshtml";
-    ViewData["Title"] = "Mon hoc tien quyet";
+    ViewData["Title"] = "Môn học tiên quyết";
 }
 @section Styles {
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css" />
@@ -10,15 +10,15 @@
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
-        <h1 class="h3 mb-1">Quan ly mon hoc tien quyet</h1>
-        <div class="text-muted">Thiet lap mon can hoc truoc de goi y hoc vuot dung luat.</div>
+        <h1 class="h3 mb-1">Quản lý môn học tiên quyết</h1>
+        <div class="text-muted">Thiết lập môn cần học trước để gợi ý học vượt đúng luật.</div>
     </div>
 </div>
 
 <div class="row g-4">
     <div class="col-xl-4">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white fw-semibold">@(Model.Form.Id == 0 ? "Them mon tien quyet" : "Sua mon tien quyet")</div>
+            <div class="card-header bg-white fw-semibold">@(Model.Form.Id == 0 ? "Thêm môn tiên quyết" : "Sửa môn tiên quyết")</div>
             <div class="card-body">
                 <form action="/Admin/MonHocTienQuyet/Luu" method="post">
                     @Html.AntiForgeryToken()
@@ -26,9 +26,9 @@
                     <input type="hidden" name="search" value="@Model.Search" />
                     <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
                     <div class="mb-3">
-                        <label class="form-label">Mon hoc</label>
+                        <label class="form-label">Môn học</label>
                         <select name="MonHocId" class="form-select" required>
-                            <option value="">-- Chon mon hoc --</option>
+                            <option value="">-- Chọn môn học --</option>
                             @foreach (var mon in Model.MonHocOptions)
                             {
                                 <option value="@mon.Id" selected="@(mon.Id == Model.Form.MonHocId)">@mon.MaMonHoc - @mon.TenMonHoc</option>
@@ -37,9 +37,9 @@
                         <span class="text-danger small">@Html.ValidationMessage("MonHocId")</span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Mon tien quyet</label>
+                        <label class="form-label">Môn tiên quyết</label>
                         <select name="MonHocTienQuyetId" class="form-select" required>
-                            <option value="">-- Chon mon tien quyet --</option>
+                            <option value="">-- Chọn môn tiên quyết --</option>
                             @foreach (var mon in Model.MonHocOptions)
                             {
                                 <option value="@mon.Id" selected="@(mon.Id == Model.Form.MonHocTienQuyetId)">@mon.MaMonHoc - @mon.TenMonHoc</option>
@@ -49,30 +49,30 @@
                     </div>
                     <div class="row g-3">
                         <div class="col-sm-6">
-                            <label class="form-label">Muc do</label>
+                            <label class="form-label">Mức độ</label>
                             <select name="MucDo" class="form-select">
                                 @foreach (var value in Enum.GetValues<MucDoTienQuyet>())
                                 {
-                                    <option value="@value" selected="@(value == Model.Form.MucDo)">@value</option>
+                                    <option value="@value" selected="@(value == Model.Form.MucDo)">@MucDoText(value)</option>
                                 }
                             </select>
                         </div>
                         <div class="col-sm-6 d-flex align-items-end">
                             <div class="form-check form-switch mb-2">
                                 <input class="form-check-input" type="checkbox" name="BatBuoc" value="true" id="BatBuoc" checked="@(Model.Form.BatBuoc ? "checked" : null)" />
-                                <label class="form-check-label" for="BatBuoc">Bat buoc</label>
+                                <label class="form-check-label" for="BatBuoc">Bắt buộc</label>
                             </div>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Ghi chu</label>
+                        <label class="form-label">Ghi chú</label>
                         <textarea name="GhiChu" class="form-control" rows="3">@Model.Form.GhiChu</textarea>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-primary"><i class="bi bi-save"></i> Luu</button>
+                        <button class="btn btn-primary"><i class="bi bi-save"></i> Lưu</button>
                         @if (Model.Form.Id != 0)
                         {
-                            <a href="/Admin/MonHocTienQuyet" class="btn btn-light">Huy sua</a>
+                            <a href="/Admin/MonHocTienQuyet" class="btn btn-light">Hủy sửa</a>
                         }
                     </div>
                 </form>
@@ -83,21 +83,21 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body border-bottom">
                 <form method="get" class="row g-2">
-                    <div class="col-md-8"><input class="form-control" name="search" value="@Model.Search" placeholder="Tim theo ma mon hoc hoac ten mon hoc" /></div>
-                    <div class="col-auto"><button class="btn btn-dark"><i class="bi bi-search"></i> Tim</button></div>
+                    <div class="col-md-8"><input class="form-control" name="search" value="@Model.Search" placeholder="Tìm theo mã môn học hoặc tên môn học" /></div>
+                    <div class="col-auto"><button class="btn btn-dark"><i class="bi bi-search"></i> Tìm</button></div>
                     @if (!string.IsNullOrWhiteSpace(Model.Search))
                     {
-                        <div class="col-auto"><a class="btn btn-light" href="/Admin/MonHocTienQuyet">Xoa loc</a></div>
+                        <div class="col-auto"><a class="btn btn-light" href="/Admin/MonHocTienQuyet">Xóa lọc</a></div>
                     }
                 </form>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0" id="monHocTienQuyetTable">
-                    <thead><tr><th>Mon hoc</th><th>Mon tien quyet</th><th>Bat buoc</th><th>Muc do</th><th>Ghi chu</th><th class="text-end">Thao tac</th></tr></thead>
+                    <thead><tr><th>Môn học</th><th>Môn tiên quyết</th><th>Bắt buộc</th><th>Mức độ</th><th>Ghi chú</th><th class="text-end">Thao tác</th></tr></thead>
                     <tbody>
                     @if (Model.Items.Count == 0)
                     {
-                        <tr><td colspan="6" class="text-center text-muted py-5">Chua co cau hinh mon tien quyet.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-5">Chưa có cấu hình môn tiên quyết.</td></tr>
                     }
                     else
                     {
@@ -106,12 +106,12 @@
                             <tr>
                                 <td><strong>@item.MonHoc?.MaMonHoc</strong><small class="d-block text-muted">@item.MonHoc?.TenMonHoc</small></td>
                                 <td><strong>@item.MonHocTienQuyetCuaMon?.MaMonHoc</strong><small class="d-block text-muted">@item.MonHocTienQuyetCuaMon?.TenMonHoc</small></td>
-                                <td><span class="badge @(item.BatBuoc ? "text-bg-danger" : "text-bg-secondary")">@(item.BatBuoc ? "BatBuoc" : "KhuyenNghi")</span></td>
-                                <td><span class="badge text-bg-info">@item.MucDo</span></td>
+                                <td><span class="badge hocvuot-prereq-badge @(item.BatBuoc ? "text-bg-danger" : "text-bg-secondary")">@(item.BatBuoc ? "Bắt buộc" : "Khuyến nghị")</span></td>
+                                <td><span class="badge hocvuot-prereq-badge text-bg-info">@MucDoText(item.MucDo)</span></td>
                                 <td>@(item.GhiChu ?? "-")</td>
                                 <td class="text-end text-nowrap">
                                     <a class="btn btn-sm btn-outline-primary" href="/Admin/MonHocTienQuyet?editId=@item.Id&search=@Uri.EscapeDataString(Model.Search)"><i class="bi bi-pencil"></i></a>
-                                    <form action="/Admin/MonHocTienQuyet/Xoa/@item.Id" method="post" class="d-inline" data-hocvuot-confirm="Xoa cau hinh mon tien quyet nay?">
+                                    <form action="/Admin/MonHocTienQuyet/Xoa/@item.Id" method="post" class="d-inline" data-hocvuot-confirm="Xóa cấu hình môn tiên quyết này?">
                                         @Html.AntiForgeryToken()
                                         <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                                     </form>
@@ -125,6 +125,16 @@
         </div>
     </div>
 </div>
+
+@functions {
+    string MucDoText(MucDoTienQuyet value) => value switch
+    {
+        MucDoTienQuyet.BatBuoc => "Bắt buộc",
+        MucDoTienQuyet.KhuyenNghi => "Khuyến nghị",
+        MucDoTienQuyet.NenHocTruoc => "Nên học trước",
+        _ => value.ToString()
+    };
+}
 
 @section Scripts {
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

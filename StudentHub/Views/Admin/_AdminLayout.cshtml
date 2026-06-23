@@ -12,7 +12,7 @@
 <body>
     <aside class="admin-sidebar" id="sidebar">
         <a class="brand" href="/Admin/Dashboard"><i class="bi bi-mortarboard-fill"></i> SIMS</a>
-        <div class="small text-uppercase text-white-50 px-3 mt-3 mb-2">Quản trị hệ thống</div>
+        <div class="small text-uppercase px-3 mt-3 mb-2">Quản trị hệ thống</div>
         <nav class="nav flex-column">
             <a class="nav-link" href="/Admin/Dashboard"><i class="bi bi-grid"></i> Dashboard</a>
             <a class="nav-link" href="/Admin/Khoa"><i class="bi bi-building"></i> Khoa</a>
@@ -23,23 +23,32 @@
             <a class="nav-link" href="/Admin/LopHoc"><i class="bi bi-journal-text"></i> Lớp học</a>
             <a class="nav-link" href="/Admin/LichHoc"><i class="bi bi-calendar3"></i> Lịch học</a>
             <a class="nav-link" href="/Admin/DangKyHoc"><i class="bi bi-clipboard-check"></i> Đăng ký học</a>
-            <div class="small text-uppercase text-white-50 px-3 mt-3 mb-2">Học vượt</div>
+            <div class="small text-uppercase px-3 mt-3 mb-2">Học vượt</div>
             <a class="nav-link" href="/Admin/MonHocTienQuyet"><i class="bi bi-diagram-3"></i> Môn tiên quyết</a>
             <a class="nav-link" href="/Admin/GoiYHocVuot"><i class="bi bi-lightbulb"></i> Gợi ý học vượt</a>
             <a class="nav-link" href="/Admin/TaiKhoan"><i class="bi bi-shield-lock"></i> Tài khoản</a>
         </nav>
     </aside>
     <main class="admin-main">
-        <nav class="navbar navbar-expand bg-white border-bottom sticky-top px-3">
-            <button class="btn btn-light d-lg-none" id="sidebarToggle"><i class="bi bi-list"></i></button>
+        <nav class="navbar navbar-expand border-bottom sticky-top px-3">
+            <button class="btn btn-light d-lg-none" id="sidebarToggle" type="button" aria-label="Mở menu"><i class="bi bi-list"></i></button>
             <div class="ms-auto d-flex align-items-center gap-3">
-                <span><i class="bi bi-person-circle me-1"></i> @User.Identity?.Name</span>
-                <form action="/TaiKhoan/DangXuat" method="post">@Html.AntiForgeryToken()<button class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button></form>
+                <span class="text-nowrap"><i class="bi bi-person-circle me-1"></i> @User.Identity?.Name</span>
+                <form action="/TaiKhoan/DangXuat" method="post">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>
+                </form>
             </div>
         </nav>
-        <div class="container-fluid p-3 p-lg-4">
-            @if (TempData["Success"] != null) { <div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>@TempData["Success"]<button class="btn-close" data-bs-dismiss="alert"></button></div> }
-            @if (TempData["Error"] != null) { <div class="alert alert-danger alert-dismissible fade show"><i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]<button class="btn-close" data-bs-dismiss="alert"></button></div> }
+        <div class="container-fluid p-3 p-lg-4" data-admin-content>
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert"><i class="bi bi-check-circle me-2"></i>@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert"><i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+            }
             @RenderBody()
         </div>
     </main>
