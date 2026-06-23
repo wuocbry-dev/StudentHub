@@ -1,0 +1,55 @@
+@model LichSuNhapDuLieuViewModel
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Lịch sử import";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/nhapdulieu.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h1 class="h3 mb-1 fw-bold">Lịch sử import</h1>
+        <div class="text-muted">Theo dõi các lần nhập dữ liệu từ file.</div>
+    </div>
+    <a class="btn btn-primary" href="/Admin/NhapDuLieu"><i class="bi bi-plus-lg"></i> Import mới</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Id</th><th>Tên file</th><th>Loại file</th><th>Loại dữ liệu</th><th>Tổng</th><th>Hợp lệ</th><th>Lỗi</th><th>Trạng thái</th><th>Ngày nhập</th><th>Người nhập</th><th class="text-end">Thao tác</th></tr></thead>
+            <tbody>
+            @if (!Model.Items.Any())
+            {
+                <tr><td colspan="11" class="text-center text-muted py-5">Chưa có lịch sử import.</td></tr>
+            }
+            else
+            {
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td><strong>@item.TenFile</strong></td>
+                        <td>@item.LoaiFile</td>
+                        <td>@item.LoaiDuLieu</td>
+                        <td>@item.TongSoDong</td>
+                        <td>@item.SoDongHopLe</td>
+                        <td>@item.SoDongLoi</td>
+                        <td><span class="badge text-bg-light text-dark">@item.TrangThai</span></td>
+                        <td>@item.NgayNhap.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@item.TaiKhoan?.HoTen</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary" href="/Admin/NhapDuLieu/ChiTiet/@item.Id"><i class="bi bi-eye"></i></a>
+                            @if (item.SoDongLoi > 0)
+                            {
+                                <a class="btn btn-sm btn-outline-secondary" href="/Admin/NhapDuLieu/TaiFileLoi/@item.Id" data-no-ajax="true" download><i class="bi bi-download"></i></a>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

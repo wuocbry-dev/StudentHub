@@ -150,25 +150,34 @@ public class GoiYHocVuotService(SimsDbContext db, IGioiHanHocVuotService gioiHan
         var goiY = await db.GoiYHocVuot
             .Include(x => x.LopHoc)
             .SingleOrDefaultAsync(x => x.Id == goiYHocVuotId && x.SinhVienId == sinhVienId);
-        if (goiY == null) return (false, "Khong tim thay goi y hoc vuot.");
+        if (goiY == null) return (false, "Không tìm thấy gợi ý học vượt.");
         if (goiY.TrangThai is TrangThaiGoiY.DaBoQua or TrangThaiGoiY.HetHan)
-            return (false, "Goi y hoc vuot khong con hieu luc.");
+            return (false, "Gợi ý học vượt không còn hiệu lực.");
         if (goiY.TrangThai == TrangThaiGoiY.DaDangKy)
-            return (false, "Ban da dang ky tu goi y nay.");
+            return (false, "Bạn đã đăng ký từ gợi ý này.");
+        goiY.HocKyGoiY = ChuanHoa(goiY.HocKyGoiY);
+        goiY.NamHocGoiY = ChuanHoa(goiY.NamHocGoiY);
+
+        if (await DaDangKyMonHoacLopAsync(sinhVienId, goiY.MonHocId, goiY.LopHocId))
+        {
+            await CapNhatGoiYDaDangKyAsync(sinhVienId, goiY.MonHocId, goiY.LopHocId, goiY.HocKyGoiY, goiY.NamHocGoiY);
+            return (false, "Ban da dang ky lop hoac mon hoc nay.");
+        }
+
         if (!await gioiHanHocVuotService.CoTheDangKyHocVuotAsync(sinhVienId, goiY.HocKyGoiY, goiY.NamHocGoiY))
             return (false, await gioiHanHocVuotService.LayThongBaoGioiHanAsync(sinhVienId, goiY.HocKyGoiY, goiY.NamHocGoiY));
         if (!await LopConChoAsync(goiY.LopHocId))
-            return (false, "Lop hoc da du so luong.");
+            return (false, "Lớp học đã đủ số lượng.");
         if (await KiemTraTrungLichAsync(sinhVienId, goiY.LopHocId))
-            return (false, "Lop hoc bi trung lich voi lop da dang ky.");
+            return (false, "Lớp học bị trùng lịch với lớp đã đăng ký.");
         if (!await KiemTraMonTienQuyetAsync(sinhVienId, goiY.MonHocId))
-            return (false, "Ban chua dat mon tien quyet bat buoc.");
+            return (false, "Bạn chưa đạt môn tiên quyết bắt buộc.");
 
         var daDangKy = await db.DangKyHoc.AnyAsync(x => x.SinhVienId == sinhVienId
             && x.LopHocId == goiY.LopHocId
             && x.TrangThai != TrangThaiDangKy.DaHuy
             && x.TrangThai != TrangThaiDangKy.TuChoi);
-        if (daDangKy) return (false, "Ban da dang ky lop hoc nay.");
+        if (daDangKy) return (false, "Bạn đã đăng ký lớp học này.");
 
         db.DangKyHoc.Add(new DangKyHoc
         {
@@ -182,8 +191,51 @@ public class GoiYHocVuotService(SimsDbContext db, IGioiHanHocVuotService gioiHan
 
         goiY.TrangThai = TrangThaiGoiY.DaDangKy;
         goiY.NgayCapNhat = DateTime.Now;
+        var goiYCungMonHoacLop = await db.GoiYHocVuot
+            .Where(x => x.SinhVienId == sinhVienId
+                && x.Id != goiY.Id
+                && (x.LopHocId == goiY.LopHocId || x.MonHocId == goiY.MonHocId)
+                && x.HocKyGoiY.Trim() == goiY.HocKyGoiY
+                && x.NamHocGoiY.Trim() == goiY.NamHocGoiY
+                && x.TrangThai != TrangThaiGoiY.DaBoQua
+                && x.TrangThai != TrangThaiGoiY.HetHan)
+            .ToListAsync();
+        foreach (var item in goiYCungMonHoacLop)
+        {
+            item.TrangThai = TrangThaiGoiY.DaDangKy;
+            item.NgayCapNhat = DateTime.Now;
+        }
         await db.SaveChangesAsync();
-        return (true, "Dang ky hoc vuot thanh cong. Trang thai dang ky dang cho duyet.");
+        return (true, "Đăng ký học vượt thành công. Trạng thái đăng ký đang chờ duyệt.");
+    }
+
+    private async Task<bool> DaDangKyMonHoacLopAsync(int sinhVienId, int monHocId, int lopHocId)
+    {
+        return await db.DangKyHoc.AsNoTracking()
+            .AnyAsync(x => x.SinhVienId == sinhVienId
+                && (x.LopHocId == lopHocId || x.LopHoc!.MonHocId == monHocId)
+                && x.TrangThai != TrangThaiDangKy.DaHuy
+                && x.TrangThai != TrangThaiDangKy.TuChoi);
+    }
+
+    private async Task CapNhatGoiYDaDangKyAsync(int sinhVienId, int monHocId, int lopHocId, string hocKy, string namHoc)
+    {
+        var goiYDaDangKy = await db.GoiYHocVuot
+            .Where(x => x.SinhVienId == sinhVienId
+                && (x.LopHocId == lopHocId || x.MonHocId == monHocId)
+                && x.HocKyGoiY.Trim() == hocKy
+                && x.NamHocGoiY.Trim() == namHoc
+                && x.TrangThai != TrangThaiGoiY.DaBoQua
+                && x.TrangThai != TrangThaiGoiY.HetHan)
+            .ToListAsync();
+
+        foreach (var item in goiYDaDangKy)
+        {
+            item.TrangThai = TrangThaiGoiY.DaDangKy;
+            item.NgayCapNhat = DateTime.Now;
+        }
+
+        if (goiYDaDangKy.Count > 0) await db.SaveChangesAsync();
     }
 
     private async Task<HashSet<int>> LayMonDaHocDatIdsAsync(int sinhVienId)
@@ -258,9 +310,9 @@ public class GoiYHocVuotService(SimsDbContext db, IGioiHanHocVuotService gioiHan
     private async Task<string> TaoLyDoGoiYAsync(int sinhVienId, LopHoc lop, decimal gpa, decimal diemPhuHop)
     {
         var tienQuyetDat = await KiemTraMonTienQuyetAsync(sinhVienId, lop.MonHocId);
-        var mucGpa = gpa >= 8m ? "GPA cao" : gpa >= 6.5m ? "GPA phu hop" : "Can can nhac hoc luc";
-        var tienQuyet = tienQuyetDat ? "da dat mon tien quyet bat buoc" : "thieu mon tien quyet";
-        return $"{mucGpa}, {tienQuyet}, lop con cho, khong trung lich. Diem phu hop {diemPhuHop:0.##}/100.";
+        var mucGpa = gpa >= 8m ? "GPA cao" : gpa >= 6.5m ? "GPA phù hợp" : "Cần cân nhắc học lực";
+        var tienQuyet = tienQuyetDat ? "đã đạt môn tiên quyết bắt buộc" : "thiếu môn tiên quyết";
+        return $"{mucGpa}, {tienQuyet}, lớp còn chỗ, không trùng lịch. Điểm phù hợp {diemPhuHop:0.##}/100.";
     }
 
     private async Task<List<GoiYHocVuotViewModel>> ToViewModelsAsync(List<GoiYHocVuot> goiY)
@@ -271,15 +323,32 @@ public class GoiYHocVuotService(SimsDbContext db, IGioiHanHocVuotService gioiHan
             .Include(x => x.PhongHoc)
             .ToListAsync();
 
+        var sinhVienIds = goiY.Select(x => x.SinhVienId).Distinct().ToList();
+        var dangKyHienTai = await db.DangKyHoc.AsNoTracking()
+            .Where(x => sinhVienIds.Contains(x.SinhVienId)
+                && x.TrangThai != TrangThaiDangKy.DaHuy
+                && x.TrangThai != TrangThaiDangKy.TuChoi)
+            .Select(x => new { x.SinhVienId, x.LopHocId, MonHocId = x.LopHoc!.MonHocId })
+            .ToListAsync();
+
         var result = new List<GoiYHocVuotViewModel>();
         foreach (var item in goiY)
         {
             var lichText = string.Join("; ", lich.Where(x => x.LopHocId == item.LopHocId)
                 .OrderBy(x => x.ThuTrongTuan)
                 .ThenBy(x => x.GioBatDau)
-                .Select(x => $"Thu {x.ThuTrongTuan}, {x.GioBatDau:hh\\:mm}-{x.GioKetThuc:hh\\:mm}, {x.PhongHoc?.MaPhong ?? "Chua xep phong"}"));
+                .Select(x => $"Thứ {x.ThuTrongTuan}, {x.GioBatDau:hh\\:mm}-{x.GioKetThuc:hh\\:mm}, {x.PhongHoc?.MaPhong ?? "Chưa xếp phòng"}"));
             var soDaDangKy = await gioiHanHocVuotService.LaySoMonHocVuotDaDangKyAsync(item.SinhVienId, item.HocKyGoiY, item.NamHocGoiY);
             var soToiDa = await gioiHanHocVuotService.LaySoMonHocVuotToiDaAsync(item.HocKyGoiY, item.NamHocGoiY);
+            var daDatGioiHan = soDaDangKy >= soToiDa;
+            var daDangKy = item.TrangThai == TrangThaiGoiY.DaDangKy
+                || dangKyHienTai.Any(x => x.SinhVienId == item.SinhVienId
+                    && (x.LopHocId == item.LopHocId || x.MonHocId == item.MonHocId));
+            var coTheDangKy = !daDangKy && !daDatGioiHan;
+            var lyDoKhongTheDangKy = daDangKy
+                ? "Da dang ky"
+                : daDatGioiHan ? "Da dat gioi han" : "";
+
             result.Add(new GoiYHocVuotViewModel
             {
                 Id = item.Id,
@@ -294,8 +363,8 @@ public class GoiYHocVuotService(SimsDbContext db, IGioiHanHocVuotService gioiHan
                 LopHocId = item.LopHocId,
                 MaLop = item.LopHoc?.MaLop ?? "",
                 TenLop = item.LopHoc?.TenLop ?? "",
-                GiangVien = item.LopHoc?.GiangVien?.HoTen ?? "Chua phan cong",
-                LichHoc = string.IsNullOrWhiteSpace(lichText) ? "Chua xep lich" : lichText,
+                GiangVien = item.LopHoc?.GiangVien?.HoTen ?? "Chưa phân công",
+                LichHoc = string.IsNullOrWhiteSpace(lichText) ? "Chưa xếp lịch" : lichText,
                 HocKyGoiY = item.HocKyGoiY,
                 NamHocGoiY = item.NamHocGoiY,
                 DiemPhuHop = item.DiemPhuHop,
@@ -303,7 +372,10 @@ public class GoiYHocVuotService(SimsDbContext db, IGioiHanHocVuotService gioiHan
                 MucDoGoiY = item.MucDoGoiY,
                 TrangThai = item.TrangThai,
                 NgayTao = item.NgayTao,
-                DaDatGioiHan = soDaDangKy >= soToiDa
+                DaDatGioiHan = daDatGioiHan,
+                DaDangKy = daDangKy,
+                CoTheDangKy = coTheDangKy,
+                LyDoKhongTheDangKy = lyDoKhongTheDangKy
             });
         }
 

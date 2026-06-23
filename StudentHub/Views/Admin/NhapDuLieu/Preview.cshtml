@@ -1,0 +1,57 @@
+@model ImportPreviewViewModel
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Preview nhập dữ liệu";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/nhapdulieu.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h1 class="h3 mb-1 fw-bold">Preview dữ liệu</h1>
+        <div class="text-muted">@Model.LichSu.TenFile - @Model.LichSu.LoaiDuLieu - @Model.LichSu.LoaiFile</div>
+    </div>
+    <a class="btn btn-light" href="/Admin/NhapDuLieu"><i class="bi bi-arrow-left"></i> Quay lại</a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3"><div class="nhap-stat"><small>Tổng dòng</small><strong>@Model.LichSu.TongSoDong</strong></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="nhap-stat is-valid"><small>Dòng hợp lệ</small><strong>@Model.LichSu.SoDongHopLe</strong></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="nhap-stat is-error"><small>Dòng lỗi</small><strong>@Model.LichSu.SoDongLoi</strong></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="nhap-stat"><small>Tỷ lệ hợp lệ</small><strong>@Model.TyLeHopLe%</strong></div></div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body d-flex flex-wrap gap-2">
+        @if (Model.LichSu.TrangThai == TrangThaiNhapDuLieu.ChoXacNhan)
+        {
+            <form action="/Admin/NhapDuLieu/XacNhanNhap/@Model.LichSu.Id" method="post" data-nhapdulieu-confirm="Xác nhận nhập dữ liệu hợp lệ vào database?">
+                @Html.AntiForgeryToken()
+                <button class="btn btn-primary" @(Model.LichSu.SoDongLoi > 0 ? "disabled" : "")><i class="bi bi-database-check"></i> Xác nhận import</button>
+            </form>
+            @if (Model.LichSu.SoDongLoi > 0 && Model.LichSu.SoDongHopLe > 0)
+            {
+                <form action="/Admin/NhapDuLieu/XacNhanNhap/@Model.LichSu.Id" method="post" data-nhapdulieu-confirm="Chỉ nhập các dòng hợp lệ và bỏ qua dòng lỗi?">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="chiNhapDongHopLe" value="true" />
+                    <button class="btn btn-warning"><i class="bi bi-filter-circle"></i> Chỉ nhập dòng hợp lệ</button>
+                </form>
+            }
+            <form action="/Admin/NhapDuLieu/HuyNhap/@Model.LichSu.Id" method="post" data-nhapdulieu-cancel="Hủy lần import này?">
+                @Html.AntiForgeryToken()
+                <button class="btn btn-outline-danger"><i class="bi bi-x-circle"></i> Hủy import</button>
+            </form>
+        }
+        @if (Model.LichSu.SoDongLoi > 0)
+        {
+            <a class="btn btn-outline-secondary" href="/Admin/NhapDuLieu/TaiFileLoi/@Model.LichSu.Id" data-no-ajax="true" download><i class="bi bi-file-earmark-excel"></i> Tải file lỗi</a>
+        }
+    </div>
+</div>
+
+<partial name="_PreviewTable" model="Model" />
+
+@section Scripts {
+    <script src="~/js/nhapdulieu.js" asp-append-version="true"></script>
+}

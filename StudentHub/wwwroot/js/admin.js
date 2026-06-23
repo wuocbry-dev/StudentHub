@@ -67,7 +67,7 @@
 
     const shouldRunEveryTime = src => {
         const path = new URL(src, window.location.href).pathname.toLowerCase();
-        return path.endsWith('/js/hocvuot.js');
+        return path.endsWith('/js/hocvuot.js') || path.endsWith('/js/nhapdulieu.js');
     };
 
     const loadScript = script => new Promise((resolve, reject) => {
@@ -108,10 +108,13 @@
     };
 
     const canNavigate = url => {
+        const path = url.pathname.toLowerCase();
         return url.origin === window.location.origin
-            && url.pathname.toLowerCase().startsWith('/admin')
+            && path.startsWith('/admin')
+            && !path.includes('/taifilemau')
+            && !path.includes('/taifileloi')
             && !url.hash
-            && (url.pathname.toLowerCase() !== window.location.pathname.toLowerCase()
+            && (path !== window.location.pathname.toLowerCase()
                 || url.search !== window.location.search);
     };
 
@@ -158,6 +161,7 @@
             await runPageScripts(doc);
         } catch (error) {
             if (error.name === 'AbortError') return;
+            content.classList.remove('is-loading');
             window.location.href = url.href;
         }
     };

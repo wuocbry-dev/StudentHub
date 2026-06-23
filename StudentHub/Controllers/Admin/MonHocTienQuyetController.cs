@@ -23,13 +23,13 @@ public class MonHocTienQuyetController(SimsDbContext db) : Controller
     public async Task<IActionResult> Luu(MonHocTienQuyetFormViewModel form, string search = "")
     {
         if (form.MonHocId == form.MonHocTienQuyetId)
-            ModelState.AddModelError(nameof(form.MonHocTienQuyetId), "Mon tien quyet phai khac mon hoc.");
+            ModelState.AddModelError(nameof(form.MonHocTienQuyetId), "Môn tiên quyết phải khác môn học.");
 
         var biTrung = await db.MonHocTienQuyet.AnyAsync(x => x.Id != form.Id
             && x.MonHocId == form.MonHocId
             && x.MonHocTienQuyetId == form.MonHocTienQuyetId);
         if (biTrung)
-            ModelState.AddModelError(nameof(form.MonHocTienQuyetId), "Cap mon hoc tien quyet nay da ton tai.");
+            ModelState.AddModelError(nameof(form.MonHocTienQuyetId), "Cặp môn học tiên quyết này đã tồn tại.");
 
         if (!ModelState.IsValid)
         {
@@ -57,7 +57,7 @@ public class MonHocTienQuyetController(SimsDbContext db) : Controller
         entity.GhiChu = string.IsNullOrWhiteSpace(form.GhiChu) ? null : form.GhiChu.Trim();
 
         await db.SaveChangesAsync();
-        TempData["Success"] = "Luu mon hoc tien quyet thanh cong.";
+        TempData["Success"] = "Lưu môn học tiên quyết thành công.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -69,7 +69,7 @@ public class MonHocTienQuyetController(SimsDbContext db) : Controller
         {
             db.MonHocTienQuyet.Remove(entity);
             await db.SaveChangesAsync();
-            TempData["Success"] = "Xoa mon hoc tien quyet thanh cong.";
+            TempData["Success"] = "Xóa môn học tiên quyết thành công.";
         }
         return RedirectToAction(nameof(Index));
     }

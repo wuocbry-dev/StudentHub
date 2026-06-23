@@ -27,7 +27,7 @@ public class GoiYHocVuotController(SimsDbContext db, IGoiYHocVuotService goiYHoc
         var hocKyNamHoc = await ResolveHocKyNamHocAsync(hocKy, namHoc);
         if (hocKyNamHoc == null)
         {
-            TempData["Error"] = "Chua co lop hoc de xac dinh hoc ky va nam hoc.";
+            TempData["Error"] = "Chưa có lớp học để xác định học kỳ và năm học.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -43,7 +43,7 @@ public class GoiYHocVuotController(SimsDbContext db, IGoiYHocVuotService goiYHoc
             tongGoiY += goiY.Count(x => x.HocKyGoiY == hocKyNamHoc.Value.HocKy && x.NamHocGoiY == hocKyNamHoc.Value.NamHoc);
         }
 
-        TempData["Success"] = $"Da tao lai goi y cho {sinhVienIds.Count} sinh vien, tong {tongGoiY} goi y dang hien thi.";
+        TempData["Success"] = $"Đã tạo lại gợi ý cho {sinhVienIds.Count} sinh viên, tổng {tongGoiY} gợi ý đang hiển thị.";
         return RedirectToAction(nameof(Index), new { khoaId, sinhVienId, hocKy = hocKyNamHoc.Value.HocKy, namHoc = hocKyNamHoc.Value.NamHoc });
     }
 
@@ -110,7 +110,7 @@ public class GoiYHocVuotController(SimsDbContext db, IGoiYHocVuotService goiYHoc
         LopHocId = item.LopHocId,
         MaLop = item.LopHoc?.MaLop ?? "",
         TenLop = item.LopHoc?.TenLop ?? "",
-        GiangVien = item.LopHoc?.GiangVien?.HoTen ?? "Chua phan cong",
+        GiangVien = item.LopHoc?.GiangVien?.HoTen ?? "Chưa phân công",
         HocKyGoiY = item.HocKyGoiY,
         NamHocGoiY = item.NamHocGoiY,
         DiemPhuHop = item.DiemPhuHop,

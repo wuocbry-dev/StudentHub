@@ -17,8 +17,8 @@ public class GioiHanHocVuotService(SimsDbContext db) : IGioiHanHocVuotService
             .AsNoTracking()
             .CountAsync(x => x.SinhVienId == sinhVienId
                 && x.LaHocVuot
-                && x.HocKy == hocKy
-                && x.NamHoc == namHoc
+                && x.HocKy.Trim() == hocKy
+                && x.NamHoc.Trim() == namHoc
                 && x.TrangThai != TrangThaiDangKy.DaHuy
                 && x.TrangThai != TrangThaiDangKy.TuChoi);
     }
@@ -40,8 +40,8 @@ public class GioiHanHocVuotService(SimsDbContext db) : IGioiHanHocVuotService
         var soDaDangKy = await LaySoMonHocVuotDaDangKyAsync(sinhVienId, hocKy, namHoc);
         var soToiDa = await LaySoMonHocVuotToiDaAsync(hocKy, namHoc);
         return soDaDangKy >= soToiDa
-            ? $"Sinh vien khong duoc dang ky qua {soToiDa} mon hoc vuot trong hoc ky {hocKy} nam hoc {namHoc}."
-            : $"Sinh vien da dang ky {soDaDangKy}/{soToiDa} mon hoc vuot trong hoc ky {hocKy} nam hoc {namHoc}.";
+            ? $"Sinh viên không được đăng ký quá {soToiDa} môn học vượt trong học kỳ {hocKy} năm học {namHoc}."
+            : $"Sinh viên đã đăng ký {soDaDangKy}/{soToiDa} môn học vượt trong học kỳ {hocKy} năm học {namHoc}.";
     }
 
     private static string ChuanHoa(string value) => value.Trim();

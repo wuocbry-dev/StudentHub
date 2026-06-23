@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using StudentHub.Data;
 using StudentHub.Services;
 using StudentHub.Services.HocVuot;
+using StudentHub.Services.Import;
 
 namespace StudentHub
 {
@@ -17,6 +18,14 @@ namespace StudentHub
             builder.Services.AddScoped<CanhBaoHocTapService>();
             builder.Services.AddScoped<IGioiHanHocVuotService, GioiHanHocVuotService>();
             builder.Services.AddScoped<IGoiYHocVuotService, GoiYHocVuotService>();
+            builder.Services.AddScoped<IFileImportService, FileImportService>();
+            builder.Services.AddScoped<ExcelImportReader>();
+            builder.Services.AddScoped<TxtImportReader>();
+            builder.Services.AddScoped<DocxImportReader>();
+            builder.Services.AddScoped<ImportValidationService>();
+            builder.Services.AddScoped<ImportSaveService>();
+            builder.Services.AddScoped<FileMauService>();
+            builder.Services.AddScoped<FileLoiService>();
             builder.Services.AddDbContext<SimsDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("SimsConnection")));
             builder.Services.AddDistributedMemoryCache();

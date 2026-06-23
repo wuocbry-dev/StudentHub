@@ -7,33 +7,83 @@
     var adminBaseUrl = "/Admin/" + ViewContext.RouteData.Values["controller"];
     var props = Model.EntityType.GetProperties().Where(CrudController<object>.IsEditable).ToList();
     string OptionText(object item) {
-        var t = item.GetType(); var code = t.GetProperties().FirstOrDefault(x => x.Name.StartsWith("Ma"))?.GetValue(item);
+        var t = item.GetType();
+        var code = t.GetProperties().FirstOrDefault(x => x.Name.StartsWith("Ma"))?.GetValue(item);
         var name = t.GetProperty("Ten" + t.Name)?.GetValue(item) ?? t.GetProperty("HoTen")?.GetValue(item) ?? t.GetProperty("TenPhong")?.GetValue(item) ?? t.GetProperty("TenLop")?.GetValue(item) ?? t.GetProperty("TenDangNhap")?.GetValue(item);
         return string.Join(" - ", new[] { code, name }.Where(x => x != null));
     }
 }
-<div class="mb-4"><a href="@adminBaseUrl" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Quay lại</a><h1 class="h3 mt-2">@(Model.IsEdit ? "Chỉnh sửa" : "Thêm mới") @Model.Title.ToLower()</h1></div>
-<div class="card border-0 shadow-sm"><div class="card-body p-4">
-<form method="post"><div asp-validation-summary="ModelOnly" class="alert alert-danger"></div><div class="row g-3">
-@foreach(var p in props) {
-    var value = p.GetValue(Model.Entity); var baseType = Nullable.GetUnderlyingType(p.PropertyType) ?? p.PropertyType;
-    <div class="col-md-6"><label class="form-label" for="@p.Name">@StudentHub.Models.AdminUiMetadata.Label(p.Name)</label>
-    @if (p.Name.EndsWith("Id") && ViewData["Options_" + p.Name] is IEnumerable<object> options) {
-        <select class="form-select" name="@p.Name" id="@p.Name" required><option value="">-- Chọn --</option>@foreach(var o in options){var oid=o.GetType().GetProperty("Id")?.GetValue(o);<option value="@oid" selected="@(Equals(Convert.ToString(value), Convert.ToString(oid)))">@OptionText(o)</option>}</select>
-    } else if (baseType.IsEnum) {
-        <select class="form-select" name="@p.Name" id="@p.Name">@foreach(var e in Enum.GetValues(baseType)){<option value="@e" selected="@(Equals(value,e))">@e</option>}</select>
-    } else if (baseType == typeof(DateTime)) {
-        <input class="form-control" type="date" name="@p.Name" id="@p.Name" value="@(value is DateTime d ? d.ToString("yyyy-MM-dd") : "")" />
-    } else if (baseType == typeof(TimeSpan)) {
-        <input class="form-control" type="time" name="@p.Name" id="@p.Name" value="@(value is TimeSpan t ? t.ToString(@"hh\:mm") : "")" />
-    } else if (baseType == typeof(bool)) {
-        <div class="form-check form-switch pt-2"><input class="form-check-input" type="checkbox" name="@p.Name" id="@p.Name" value="true" checked="@(value is bool b && b ? "checked" : null)" /><label class="form-check-label" for="@p.Name">Báº­t</label></div>
-    } else if (baseType == typeof(int)) {
-        <input class="form-control" type="number" name="@p.Name" id="@p.Name" value="@value" />
-    } else {
-        <input class="form-control" type="@(p.Name == "Email" ? "email" : "text")" name="@p.Name" id="@p.Name" value="@value" />
-    }<span class="text-danger">@Html.ValidationMessage(p.Name)</span></div>
-}
-@if(Model.EntityType == typeof(StudentHub.Models.TaiKhoan)){<div class="col-md-6"><label class="form-label">Mật khẩu @(Model.IsEdit ? "(để trống nếu không đổi)" : "")</label><input class="form-control" type="password" name="MatKhau" /><span class="text-danger">@Html.ValidationMessage("MatKhau")</span></div>}
-</div><div class="mt-4 d-flex gap-2"><button class="btn btn-primary px-4"><i class="bi bi-check-lg"></i> Lưu</button><a href="@adminBaseUrl" class="btn btn-light">Hủy</a></div></form>
-</div></div>
+
+<div class="mb-4">
+    <a href="@adminBaseUrl" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Quay lại</a>
+    <h1 class="h3 mt-2 mb-0 fw-bold">@(Model.IsEdit ? "Chỉnh sửa" : "Thêm mới") @Model.Title.ToLower()</h1>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+            <div class="row g-3">
+            @foreach (var p in props)
+            {
+                var value = p.GetValue(Model.Entity);
+                var baseType = Nullable.GetUnderlyingType(p.PropertyType) ?? p.PropertyType;
+                <div class="col-md-6">
+                    <label class="form-label" for="@p.Name">@StudentHub.Models.AdminUiMetadata.Label(p.Name)</label>
+                    @if (p.Name.EndsWith("Id") && ViewData["Options_" + p.Name] is IEnumerable<object> options)
+                    {
+                        <select class="form-select" name="@p.Name" id="@p.Name" required>
+                            <option value="">-- Chọn --</option>
+                            @foreach (var o in options)
+                            {
+                                var oid = o.GetType().GetProperty("Id")?.GetValue(o);
+                                <option value="@oid" selected="@(Equals(Convert.ToString(value), Convert.ToString(oid)))">@OptionText(o)</option>
+                            }
+                        </select>
+                    }
+                    else if (baseType.IsEnum)
+                    {
+                        <select class="form-select" name="@p.Name" id="@p.Name">@foreach (var e in Enum.GetValues(baseType)) { <option value="@e" selected="@(Equals(value, e))">@e</option> }</select>
+                    }
+                    else if (baseType == typeof(DateTime))
+                    {
+                        <input class="form-control" type="date" name="@p.Name" id="@p.Name" value="@(value is DateTime d ? d.ToString("yyyy-MM-dd") : "")" />
+                    }
+                    else if (baseType == typeof(TimeSpan))
+                    {
+                        <input class="form-control" type="time" name="@p.Name" id="@p.Name" value="@(value is TimeSpan t ? t.ToString(@"hh\:mm") : "")" />
+                    }
+                    else if (baseType == typeof(bool))
+                    {
+                        <div class="form-check form-switch pt-2">
+                            <input class="form-check-input" type="checkbox" name="@p.Name" id="@p.Name" value="true" checked="@(value is bool b && b ? "checked" : null)" />
+                            <label class="form-check-label" for="@p.Name">Bật</label>
+                        </div>
+                    }
+                    else if (baseType == typeof(int))
+                    {
+                        <input class="form-control" type="number" name="@p.Name" id="@p.Name" value="@value" />
+                    }
+                    else
+                    {
+                        <input class="form-control" type="@(p.Name == "Email" ? "email" : "text")" name="@p.Name" id="@p.Name" value="@value" />
+                    }
+                    <span class="text-danger small">@Html.ValidationMessage(p.Name)</span>
+                </div>
+            }
+            @if (Model.EntityType == typeof(StudentHub.Models.TaiKhoan))
+            {
+                <div class="col-md-6">
+                    <label class="form-label">Mật khẩu @(Model.IsEdit ? "(để trống nếu không đổi)" : "")</label>
+                    <input class="form-control" type="password" name="MatKhau" />
+                    <span class="text-danger small">@Html.ValidationMessage("MatKhau")</span>
+                </div>
+            }
+            </div>
+            <div class="mt-4 d-flex flex-wrap gap-2">
+                <button class="btn btn-primary px-4"><i class="bi bi-check-lg"></i> Lưu</button>
+                <a href="@adminBaseUrl" class="btn btn-light">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>

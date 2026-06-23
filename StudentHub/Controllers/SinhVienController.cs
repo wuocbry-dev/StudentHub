@@ -277,7 +277,7 @@ public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoSe
         if (sinhVien == null) return View("ChuaLienKet");
 
         var hocKyOptions = await db.LopHoc.AsNoTracking()
-            .Select(x => new SinhVienHocVuotHocKyOptionViewModel { HocKy = x.HocKy, NamHoc = x.NamHoc })
+            .Select(x => new SinhVienHocVuotHocKyOptionViewModel { HocKy = x.HocKy.Trim(), NamHoc = x.NamHoc.Trim() })
             .Distinct()
             .OrderByDescending(x => x.NamHoc)
             .ThenByDescending(x => x.HocKy)
@@ -292,12 +292,15 @@ public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoSe
             });
         }
 
+        hocKy = hocKy?.Trim();
+        namHoc = namHoc?.Trim();
+
         if (string.IsNullOrWhiteSpace(hocKy) || string.IsNullOrWhiteSpace(namHoc)
-            || !hocKyOptions.Any(x => x.HocKy == hocKy && x.NamHoc == namHoc))
+            || !hocKyOptions.Any(x => x.HocKy.Trim() == hocKy && x.NamHoc.Trim() == namHoc))
         {
             var macDinh = hocKyOptions.First();
-            hocKy = macDinh.HocKy;
-            namHoc = macDinh.NamHoc;
+            hocKy = macDinh.HocKy.Trim();
+            namHoc = macDinh.NamHoc.Trim();
         }
 
         var soDaDangKy = await gioiHanHocVuotService.LaySoMonHocVuotDaDangKyAsync(sinhVien.Id, hocKy, namHoc);
@@ -305,11 +308,12 @@ public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoSe
         var dangKyHocVuot = await db.DangKyHoc.AsNoTracking()
             .Where(x => x.SinhVienId == sinhVien.Id
                 && x.LaHocVuot
-                && x.HocKy == hocKy
-                && x.NamHoc == namHoc
+                && x.HocKy.Trim() == hocKy
+                && x.NamHoc.Trim() == namHoc
                 && x.TrangThai != TrangThaiDangKy.DaHuy
                 && x.TrangThai != TrangThaiDangKy.TuChoi)
             .Include(x => x.LopHoc).ThenInclude(x => x!.MonHoc)
+            .Include(x => x.LopHoc).ThenInclude(x => x!.GiangVien)
             .OrderByDescending(x => x.NgayDangKy)
             .Select(x => new SinhVienHocVuotItemViewModel
             {
@@ -339,7 +343,7 @@ public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoSe
         if (sinhVien == null) return View("ChuaLienKet");
 
         var hocKyOptions = await db.LopHoc.AsNoTracking()
-            .Select(x => new SinhVienHocVuotHocKyOptionViewModel { HocKy = x.HocKy, NamHoc = x.NamHoc })
+            .Select(x => new SinhVienHocVuotHocKyOptionViewModel { HocKy = x.HocKy.Trim(), NamHoc = x.NamHoc.Trim() })
             .Distinct()
             .OrderByDescending(x => x.NamHoc)
             .ThenByDescending(x => x.HocKy)
@@ -354,22 +358,25 @@ public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoSe
             });
         }
 
+        hocKy = hocKy?.Trim();
+        namHoc = namHoc?.Trim();
+
         if (string.IsNullOrWhiteSpace(hocKy) || string.IsNullOrWhiteSpace(namHoc)
-            || !hocKyOptions.Any(x => x.HocKy == hocKy && x.NamHoc == namHoc))
+            || !hocKyOptions.Any(x => x.HocKy.Trim() == hocKy && x.NamHoc.Trim() == namHoc))
         {
             var macDinh = hocKyOptions.First();
-            hocKy = macDinh.HocKy;
-            namHoc = macDinh.NamHoc;
+            hocKy = macDinh.HocKy.Trim();
+            namHoc = macDinh.NamHoc.Trim();
         }
 
         var coDuLieuGoiY = await db.GoiYHocVuot.AnyAsync(x => x.SinhVienId == sinhVien.Id
-            && x.HocKyGoiY == hocKy
-            && x.NamHocGoiY == namHoc);
+            && x.HocKyGoiY.Trim() == hocKy
+            && x.NamHocGoiY.Trim() == namHoc);
         if (taoLai || !coDuLieuGoiY)
             await goiYHocVuotService.TaoGoiYChoSinhVienAsync(sinhVien.Id, hocKy, namHoc);
 
         var goiY = (await goiYHocVuotService.LayGoiYCuaSinhVienAsync(sinhVien.Id))
-            .Where(x => x.HocKyGoiY == hocKy && x.NamHocGoiY == namHoc)
+            .Where(x => x.HocKyGoiY.Trim() == hocKy && x.NamHocGoiY.Trim() == namHoc)
             .ToList();
 
         var gpa = await goiYHocVuotService.TinhGPAAsync(sinhVien.Id);
@@ -411,7 +418,7 @@ public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoSe
         if (!thuocSinhVien) return NotFound();
 
         await goiYHocVuotService.CapNhatTrangThaiGoiYAsync(id, TrangThaiGoiY.DaBoQua.ToString());
-        TempData["Success"] = "Da bo qua goi y hoc vuot.";
+        TempData["Success"] = "Đã bỏ qua gợi ý học vượt.";
         return RedirectToAction(nameof(GoiYHocVuot));
     }
 

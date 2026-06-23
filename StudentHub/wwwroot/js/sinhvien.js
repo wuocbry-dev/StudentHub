@@ -18,8 +18,9 @@
     const path = window.location.pathname.replace(/\/$/, '').toLowerCase();
     document.querySelectorAll('.student-nav-link').forEach(link => {
         const target = new URL(link.href).pathname.replace(/\/$/, '').toLowerCase();
-        if (path === target || (target === '/sinhvien/dashboard' && path === '/sinhvien'))
+        if (path === target || (target === '/sinhvien/dashboard' && path === '/sinhvien') || (target !== '/sinhvien/dashboard' && path.startsWith(target + '/'))) {
             link.classList.add('active');
+        }
     });
 
     const address = document.getElementById('DiaChi');
@@ -88,8 +89,11 @@ document.querySelectorAll('form[data-student-confirm]').forEach(form => form.add
     if (form.dataset.confirmed) return;
     event.preventDefault();
     Swal.fire({
-        icon: 'question', title: form.dataset.studentConfirm,
-        showCancelButton: true, confirmButtonText: 'Xác nhận', cancelButtonText: 'Hủy',
+        icon: 'question',
+        title: form.dataset.studentConfirm,
+        showCancelButton: true,
+        confirmButtonText: 'Xác nhận',
+        cancelButtonText: 'Hủy',
         confirmButtonColor: '#2563eb'
     }).then(result => {
         if (result.isConfirmed) {

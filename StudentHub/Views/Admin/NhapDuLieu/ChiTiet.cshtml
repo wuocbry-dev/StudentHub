@@ -1,0 +1,31 @@
+@model ImportPreviewViewModel
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Chi tiết import";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/nhapdulieu.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h1 class="h3 mb-1 fw-bold">Chi tiết import #@Model.LichSu.Id</h1>
+        <div class="text-muted">@Model.LichSu.TenFile - @Model.LichSu.TrangThai</div>
+    </div>
+    <div class="d-flex gap-2">
+        @if (Model.LichSu.SoDongLoi > 0)
+        {
+            <a class="btn btn-outline-secondary" href="/Admin/NhapDuLieu/TaiFileLoi/@Model.LichSu.Id" data-no-ajax="true" download><i class="bi bi-download"></i> Tải file lỗi</a>
+        }
+        <a class="btn btn-light" href="/Admin/NhapDuLieu/LichSu"><i class="bi bi-arrow-left"></i> Lịch sử</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="nhap-stat"><small>Tổng dòng</small><strong>@Model.LichSu.TongSoDong</strong></div></div>
+    <div class="col-md-3"><div class="nhap-stat is-valid"><small>Hợp lệ</small><strong>@Model.LichSu.SoDongHopLe</strong></div></div>
+    <div class="col-md-3"><div class="nhap-stat is-error"><small>Lỗi</small><strong>@Model.LichSu.SoDongLoi</strong></div></div>
+    <div class="col-md-3"><div class="nhap-stat"><small>Đã nhập</small><strong>@Model.LichSu.SoDongDaNhap</strong></div></div>
+</div>
+
+<partial name="_PreviewTable" model="Model" />

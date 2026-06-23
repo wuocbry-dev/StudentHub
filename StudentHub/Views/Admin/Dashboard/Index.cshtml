@@ -1,10 +1,75 @@
 @model StudentHub.Models.DashboardViewModel
 @using System.Text.Json
 @{ Layout = "~/Views/Admin/_AdminLayout.cshtml"; ViewData["Title"] = "Dashboard"; }
-<div class="mb-4"><h1 class="h3 mb-1">Tổng quan hệ thống</h1><div class="text-muted">Thông tin vận hành SIMS</div></div>
-<div class="row g-3 mb-4">
-@foreach(var card in new[]{("Sinh viên",Model.TongSinhVien,"bi-people","primary"),("Giảng viên",Model.TongGiangVien,"bi-person-workspace","success"),("Môn học",Model.TongMonHoc,"bi-book","warning"),("Lớp học",Model.TongLopHoc,"bi-journal-text","info"),("Đang học",Model.SinhVienDangHoc,"bi-activity","danger")}){<div class="col-sm-6 col-xl"><div class="stat-card"><div class="stat-icon bg-@card.Item4-subtle text-@card.Item4"><i class="bi @card.Item3"></i></div><div><div class="text-muted small">@card.Item1</div><div class="fs-3 fw-bold">@card.Item2</div></div></div></div>}
+
+<div class="mb-4">
+    <h1 class="h3 mb-1 fw-bold">Tổng quan hệ thống</h1>
+    <div class="text-muted">Thông tin vận hành SIMS</div>
 </div>
-<div class="row g-4 mb-4"><div class="col-lg-6"><div class="card border-0 shadow-sm h-100"><div class="card-body"><h2 class="h6">Sinh viên theo khoa</h2><div class="chart-box"><canvas id="khoaChart"></canvas></div></div></div></div><div class="col-lg-6"><div class="card border-0 shadow-sm h-100"><div class="card-body"><h2 class="h6">Lớp theo học kỳ</h2><div class="chart-box"><canvas id="hocKyChart"></canvas></div></div></div></div></div>
-<div class="row g-4"><div class="col-lg-6"><div class="card border-0 shadow-sm"><div class="card-header bg-white fw-semibold">5 sinh viên mới nhất</div><div class="table-responsive"><table class="table mb-0"><thead><tr><th>Mã SV</th><th>Họ tên</th><th>Khoa</th></tr></thead><tbody>@foreach(var x in Model.SinhVienMoi){<tr><td>@x.MaSinhVien</td><td>@x.HoTen</td><td>@x.Khoa?.TenKhoa</td></tr>}</tbody></table></div></div></div><div class="col-lg-6"><div class="card border-0 shadow-sm"><div class="card-header bg-white fw-semibold">5 lớp mới nhất</div><div class="table-responsive"><table class="table mb-0"><thead><tr><th>Mã lớp</th><th>Tên lớp</th><th>Học kỳ</th></tr></thead><tbody>@foreach(var x in Model.LopHocMoi){<tr><td>@x.MaLop</td><td>@x.TenLop</td><td>@x.HocKy - @x.NamHoc</td></tr>}</tbody></table></div></div></div></div>
-@section Scripts {<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script>renderAdminCharts(@Html.Raw(JsonSerializer.Serialize(Model.KhoaLabels)),@Html.Raw(JsonSerializer.Serialize(Model.KhoaValues)),@Html.Raw(JsonSerializer.Serialize(Model.HocKyLabels)),@Html.Raw(JsonSerializer.Serialize(Model.HocKyValues)));</script>}
+
+<div class="row g-3 mb-4">
+@foreach (var card in new[] {
+    ("Sinh viên", Model.TongSinhVien, "bi-people", "primary"),
+    ("Giảng viên", Model.TongGiangVien, "bi-person-workspace", "success"),
+    ("Môn học", Model.TongMonHoc, "bi-book", "warning"),
+    ("Lớp học", Model.TongLopHoc, "bi-journal-text", "info"),
+    ("Đang học", Model.SinhVienDangHoc, "bi-activity", "danger")
+})
+{
+    <div class="col-sm-6 col-xl">
+        <div class="stat-card">
+            <div class="stat-icon bg-@card.Item4-subtle text-@card.Item4"><i class="bi @card.Item3"></i></div>
+            <div><div class="text-muted small">@card.Item1</div><div class="fs-3 fw-bold">@card.Item2</div></div>
+        </div>
+    </div>
+}
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h6 fw-bold">Sinh viên theo khoa</h2>
+                <div class="chart-box"><canvas id="khoaChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h6 fw-bold">Lớp theo học kỳ</h2>
+                <div class="chart-box"><canvas id="hocKyChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header fw-semibold">5 sinh viên mới nhất</div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead><tr><th>Mã SV</th><th>Họ tên</th><th>Khoa</th></tr></thead>
+                    <tbody>@foreach (var x in Model.SinhVienMoi) { <tr><td>@x.MaSinhVien</td><td>@x.HoTen</td><td>@x.Khoa?.TenKhoa</td></tr> }</tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header fw-semibold">5 lớp mới nhất</div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead><tr><th>Mã lớp</th><th>Tên lớp</th><th>Học kỳ</th></tr></thead>
+                    <tbody>@foreach (var x in Model.LopHocMoi) { <tr><td>@x.MaLop</td><td>@x.TenLop</td><td>@x.HocKy - @x.NamHoc</td></tr> }</tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>renderAdminCharts(@Html.Raw(JsonSerializer.Serialize(Model.KhoaLabels)), @Html.Raw(JsonSerializer.Serialize(Model.KhoaValues)), @Html.Raw(JsonSerializer.Serialize(Model.HocKyLabels)), @Html.Raw(JsonSerializer.Serialize(Model.HocKyValues)));</script>
+}

@@ -20,6 +20,9 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
     public DbSet<BangDiem> BangDiem => Set<BangDiem>();
     public DbSet<GoiYHocVuot> GoiYHocVuot => Set<GoiYHocVuot>();
     public DbSet<CanhBaoSinhVien> CanhBaoSinhVien => Set<CanhBaoSinhVien>();
+    public DbSet<LichSuNhapDuLieu> LichSuNhapDuLieu => Set<LichSuNhapDuLieu>();
+    public DbSet<LoiNhapDuLieu> LoiNhapDuLieu => Set<LoiNhapDuLieu>();
+    public DbSet<DuLieuNhapTam> DuLieuNhapTam => Set<DuLieuNhapTam>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -47,6 +50,9 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
         b.Entity<GoiYHocVuot>().HasIndex(x => new { x.HocKyGoiY, x.NamHocGoiY, x.MucDoGoiY, x.TrangThai });
         b.Entity<CanhBaoSinhVien>().HasIndex(x => new { x.SinhVienId, x.LopHocId, x.LoaiCanhBao })
             .IsUnique().HasFilter("[DaDoc] = 0");
+        b.Entity<LichSuNhapDuLieu>().HasIndex(x => new { x.LoaiDuLieu, x.TrangThai, x.NgayNhap });
+        b.Entity<LoiNhapDuLieu>().HasIndex(x => new { x.LichSuNhapDuLieuId, x.SoDong });
+        b.Entity<DuLieuNhapTam>().HasIndex(x => new { x.LichSuNhapDuLieuId, x.SoDong });
         b.Entity<BangDiem>().Property(x => x.DiemChuyenCan).HasPrecision(4, 2);
         b.Entity<BangDiem>().Property(x => x.DiemBaiTap).HasPrecision(4, 2);
         b.Entity<BangDiem>().Property(x => x.DiemGiuaKy).HasPrecision(4, 2);
@@ -68,6 +74,26 @@ public class SimsDbContext(DbContextOptions<SimsDbContext> options) : DbContext(
         b.Entity<GoiYHocVuot>().Property(x => x.TrangThai).HasConversion<string>();
         b.Entity<CanhBaoSinhVien>().Property(x => x.LoaiCanhBao).HasConversion<string>();
         b.Entity<CanhBaoSinhVien>().Property(x => x.MucDo).HasConversion<string>();
+        b.Entity<LichSuNhapDuLieu>().Property(x => x.LoaiFile).HasConversion<string>();
+        b.Entity<LichSuNhapDuLieu>().Property(x => x.LoaiDuLieu).HasConversion<string>();
+        b.Entity<LichSuNhapDuLieu>().Property(x => x.TrangThai).HasConversion<string>();
+        b.Entity<DuLieuNhapTam>().Property(x => x.LoaiDuLieu).HasConversion<string>();
+
+        b.Entity<LichSuNhapDuLieu>()
+            .HasOne(x => x.TaiKhoan)
+            .WithMany()
+            .HasForeignKey(x => x.TaiKhoanId)
+            .OnDelete(DeleteBehavior.Restrict);
+        b.Entity<LoiNhapDuLieu>()
+            .HasOne(x => x.LichSuNhapDuLieu)
+            .WithMany(x => x.LoiNhapDuLieu)
+            .HasForeignKey(x => x.LichSuNhapDuLieuId)
+            .OnDelete(DeleteBehavior.Cascade);
+        b.Entity<DuLieuNhapTam>()
+            .HasOne(x => x.LichSuNhapDuLieu)
+            .WithMany(x => x.DuLieuNhapTam)
+            .HasForeignKey(x => x.LichSuNhapDuLieuId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         b.Entity<MonHocTienQuyet>()
             .HasOne(x => x.MonHoc)

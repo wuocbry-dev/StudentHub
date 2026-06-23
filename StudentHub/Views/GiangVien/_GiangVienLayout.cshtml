@@ -13,7 +13,7 @@
 <body>
     <aside class="admin-sidebar lecturer-sidebar" id="sidebar">
         <a class="brand" href="/GiangVien/Dashboard"><i class="bi bi-mortarboard-fill"></i> SIMS</a>
-        <div class="small text-uppercase text-white-50 px-3 mt-3 mb-2">Cổng giảng viên</div>
+        <div class="small text-uppercase px-3 mt-3 mb-2">Cổng giảng viên</div>
         <nav class="nav flex-column">
             <a class="nav-link" href="/GiangVien/Dashboard"><i class="bi bi-grid"></i> Dashboard</a>
             <a class="nav-link" href="/GiangVien/LopCuaToi"><i class="bi bi-journal-text"></i> Lớp của tôi</a>
@@ -22,12 +22,15 @@
         </nav>
     </aside>
     <main class="admin-main">
-        <nav class="navbar navbar-expand bg-white border-bottom sticky-top px-3">
-            <button class="btn btn-light d-lg-none" id="sidebarToggle"><i class="bi bi-list"></i></button>
+        <nav class="navbar navbar-expand border-bottom sticky-top px-3">
+            <button class="btn btn-light d-lg-none" id="sidebarToggle" type="button" aria-label="Mở menu"><i class="bi bi-list"></i></button>
             <span class="ms-3 text-muted d-none d-md-inline">Hệ thống quản lý sinh viên</span>
             <div class="ms-auto d-flex align-items-center gap-3">
-                <span><i class="bi bi-person-circle me-1"></i> @User.Identity?.Name</span>
-                <form action="/TaiKhoan/DangXuat" method="post">@Html.AntiForgeryToken()<button class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button></form>
+                <span class="text-nowrap"><i class="bi bi-person-circle me-1"></i> @User.Identity?.Name</span>
+                <form action="/TaiKhoan/DangXuat" method="post">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>
+                </form>
             </div>
         </nav>
         <div class="container-fluid p-3 p-lg-4">

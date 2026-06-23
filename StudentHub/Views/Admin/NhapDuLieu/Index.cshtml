@@ -1,0 +1,110 @@
+@model NhapDuLieuIndexViewModel
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Nhập dữ liệu";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/nhapdulieu.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h1 class="h3 mb-1 fw-bold">Nhập dữ liệu từ file</h1>
+        <div class="text-muted">Upload file theo mẫu cố định, kiểm tra dữ liệu và preview trước khi lưu.</div>
+    </div>
+    <a class="btn btn-light" href="/Admin/NhapDuLieu/LichSu"><i class="bi bi-clock-history"></i> Lịch sử import</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-4">
+        <div class="card border-0 shadow-sm nhap-step-card">
+            <div class="card-header fw-semibold">Quy trình bắt buộc</div>
+            <div class="card-body">
+                @foreach (var step in new[] { "Chọn loại dữ liệu", "Tải file mẫu", "Điền dữ liệu đúng header", "Upload file", "Kiểm tra từng dòng", "Xác nhận mới lưu database" })
+                {
+                    <div class="nhap-step"><span>@(Array.IndexOf(new[] { "Chọn loại dữ liệu", "Tải file mẫu", "Điền dữ liệu đúng header", "Upload file", "Kiểm tra từng dòng", "Xác nhận mới lưu database" }, step) + 1)</span>@step</div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header fw-semibold">Upload và kiểm tra</div>
+            <div class="card-body">
+                <form action="/Admin/NhapDuLieu/KiemTraDuLieu" method="post" enctype="multipart/form-data" data-nhapdulieu-upload>
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">Loại dữ liệu</label>
+                        <select class="form-select" name="loaiDuLieu" id="loaiDuLieu">
+                            @foreach (var option in Model.LoaiDuLieuOptions)
+                            {
+                                <option value="@option.Value">@option.Label</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="row g-2 align-items-end mb-3">
+                        <div class="col">
+                            <label class="form-label">Loại file mẫu</label>
+                            <select class="form-select" id="loaiFileMau">
+                                @foreach (var option in Model.LoaiFileOptions)
+                                {
+                                    <option value="@option.Value">@option.Label (@option.Extension)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <a class="btn btn-outline-primary" href="#" data-template-link data-no-ajax="true" download><i class="bi bi-download"></i> Tải mẫu</a>
+                        </div>
+                    </div>
+                    <label class="nhap-file-box" for="file">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        <strong>Chọn file .xlsx, .txt hoặc .docx</strong>
+                        <span data-file-name>Chưa chọn file</span>
+                    </label>
+                    <input class="visually-hidden" type="file" name="file" id="file" accept=".xlsx,.txt,.docx" />
+                    <button class="btn btn-primary mt-3 w-100" data-loading-text="Đang kiểm tra..."><i class="bi bi-shield-check"></i> Kiểm tra dữ liệu</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header fw-semibold">Lưu ý định dạng</div>
+            <div class="card-body small text-muted">
+                <p>Không đổi tên header trong file mẫu.</p>
+                <p>TXT phải dùng dấu <code>|</code> để ngăn cách cột.</p>
+                <p>DOCX chỉ đọc bảng đầu tiên, không đọc văn bản tự do.</p>
+                <p>File tối đa 10MB. Upload chỉ tạo dữ liệu tạm, chưa lưu vào bảng thật.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.LichSuGanDay.Any())
+{
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header fw-semibold">Import gần đây</div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead><tr><th>File</th><th>Loại dữ liệu</th><th>Hợp lệ</th><th>Lỗi</th><th>Trạng thái</th><th class="text-end">Thao tác</th></tr></thead>
+                <tbody>
+                @foreach (var item in Model.LichSuGanDay)
+                {
+                    <tr>
+                        <td><strong>@item.TenFile</strong><small class="d-block text-muted">@item.NgayNhap.ToString("dd/MM/yyyy HH:mm")</small></td>
+                        <td>@item.LoaiDuLieu</td>
+                        <td>@item.SoDongHopLe</td>
+                        <td>@item.SoDongLoi</td>
+                        <td><span class="badge text-bg-light text-dark">@item.TrangThai</span></td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="/Admin/NhapDuLieu/ChiTiet/@item.Id">Chi tiết</a></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/nhapdulieu.js" asp-append-version="true"></script>
+}

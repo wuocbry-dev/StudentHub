@@ -1,7 +1,7 @@
 @model SinhVienHocVuotViewModel
 @{
     Layout = "~/Views/Shared/_SinhVienLayout.cshtml";
-    ViewData["Title"] = "Hoc vuot";
+    ViewData["Title"] = "Học vượt";
 }
 
 @section Styles {
@@ -10,16 +10,16 @@
 
 <div class="page-heading">
     <div>
-        <span class="page-eyebrow">GIOI HAN HOC VUOT</span>
-        <h1>Hoc vuot toi da 5 mon</h1>
-        <p>Theo doi so mon hoc vuot da dang ky trong tung hoc ky va nam hoc.</p>
+        <span class="page-eyebrow">GIỚI HẠN HỌC VƯỢT</span>
+        <h1>Học vượt tối đa 5 môn</h1>
+        <p>Theo dõi số môn học vượt đã đăng ký trong từng học kỳ và năm học.</p>
     </div>
 </div>
 
 <section class="student-panel hocvuot-limit-panel mb-4" data-hocvuot-limit data-hocvuot-full="@Model.DaDatGioiHan.ToString().ToLowerInvariant()">
     <div class="student-panel-header">
         <div>
-            <h2>Trang thai hoc vuot</h2>
+            <h2>Trạng thái học vượt</h2>
             <p>@Model.HocKy - @Model.NamHoc</p>
         </div>
         <span class="hocvuot-status-badge @(Model.DaDatGioiHan ? "is-full" : Model.SoMonHocVuotDaDangKy >= 4 ? "is-warning" : "is-safe")">
@@ -29,7 +29,7 @@
     <div class="hocvuot-limit-body">
         <form method="get" class="row g-3 align-items-end mb-4">
             <div class="col-md-5">
-                <label class="form-label">Hoc ky - Nam hoc</label>
+                <label class="form-label">Học kỳ - Năm học</label>
                 <select class="form-select" name="hocKyNamHoc" onchange="this.form.querySelector('[name=hocKy]').value=this.selectedOptions[0].dataset.hocky;this.form.querySelector('[name=namHoc]').value=this.selectedOptions[0].dataset.namhoc">
                     @foreach (var option in Model.HocKyOptions)
                     {
@@ -42,22 +42,22 @@
                 <input type="hidden" name="namHoc" value="@Model.NamHoc" />
             </div>
             <div class="col-md-auto">
-                <button class="btn btn-primary"><i class="bi bi-funnel"></i> Loc</button>
+                <button class="btn btn-primary"><i class="bi bi-funnel"></i> Lọc</button>
             </div>
         </form>
 
         <div class="row g-3">
             <div class="col-lg-4">
                 <div class="hocvuot-meter">
-                    <small>Mon hoc vuot da dang ky</small>
+                    <small>Môn học vượt đã đăng ký</small>
                     <strong>@Model.SoMonHocVuotDaDangKy/@Model.SoMonHocVuotToiDa</strong>
-                    <span>Con co the dang ky them @Model.SoMonConLai mon.</span>
+                    <span>Còn có thể đăng ký thêm @Model.SoMonConLai môn.</span>
                 </div>
             </div>
             <div class="col-lg-8">
                 <div class="hocvuot-progress-card">
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Ty le su dung gioi han</span>
+                        <span>Tỷ lệ sử dụng giới hạn</span>
                         <strong>@Model.PhanTram%</strong>
                     </div>
                     <div class="progress">
@@ -65,18 +65,18 @@
                     </div>
                     @if (Model.DaDatGioiHan)
                     {
-                        <div class="alert alert-danger mt-3 mb-0"><i class="bi bi-exclamation-triangle"></i> Ban da dat gioi han @Model.SoMonHocVuotToiDa mon hoc vuot trong hoc ky nay.</div>
+                        <div class="alert alert-danger mt-3 mb-0"><i class="bi bi-exclamation-triangle"></i> Bạn đã đạt giới hạn @Model.SoMonHocVuotToiDa môn học vượt trong học kỳ này.</div>
                     }
                     else if (Model.SoMonHocVuotDaDangKy >= 4)
                     {
-                        <div class="alert alert-warning mt-3 mb-0"><i class="bi bi-exclamation-circle"></i> Ban gan dat gioi han hoc vuot.</div>
+                        <div class="alert alert-warning mt-3 mb-0"><i class="bi bi-exclamation-circle"></i> Bạn gần đạt giới hạn học vượt.</div>
                     }
                 </div>
             </div>
         </div>
 
         <button type="button" class="btn mt-4 @(Model.DaDatGioiHan ? "btn-secondary" : "btn-outline-primary")" disabled="@Model.DaDatGioiHan" data-hocvuot-register>
-            <i class="bi bi-plus-circle"></i> Dang ky hoc vuot
+            <i class="bi bi-plus-circle"></i> Đăng ký học vượt
         </button>
     </div>
 </section>
@@ -84,17 +84,17 @@
 <section class="student-panel">
     <div class="student-panel-header">
         <div>
-            <h2>Danh sach mon hoc vuot</h2>
-            <p>Cac dang ky dang duoc tinh vao gioi han hien tai.</p>
+            <h2>Danh sách môn học vượt</h2>
+            <p>Các đăng ký đang được tính vào giới hạn hiện tại.</p>
         </div>
     </div>
     <div class="table-responsive">
         <table class="table student-data-table mb-0">
-            <thead><tr><th>Mon hoc</th><th>Lop hoc</th><th>Ngay dang ky</th><th>Trang thai</th></tr></thead>
+            <thead><tr><th>Môn học</th><th>Lớp học</th><th>Ngày đăng ký</th><th>Trạng thái</th></tr></thead>
             <tbody>
             @if (Model.DangKyHocVuot.Count == 0)
             {
-                <tr><td colspan="4"><div class="student-empty compact"><i class="bi bi-journal-check"></i><strong>Chua co mon hoc vuot trong hoc ky nay.</strong></div></td></tr>
+                <tr><td colspan="4"><div class="student-empty compact"><i class="bi bi-journal-check"></i><strong>Chưa có môn học vượt trong học kỳ này.</strong></div></td></tr>
             }
             else
             {
@@ -104,7 +104,7 @@
                         <td><strong>@item.TenMonHoc</strong></td>
                         <td><span class="class-code">@item.MaLop</span><small>@item.TenLop</small></td>
                         <td>@item.NgayDangKy.ToString("dd/MM/yyyy")</td>
-                        <td><span class="badge text-bg-primary">@item.TrangThai</span></td>
+                        <td><span class="badge text-bg-primary">@TrangThaiText(item.TrangThai)</span></td>
                     </tr>
                 }
             }
@@ -112,6 +112,18 @@
         </table>
     </div>
 </section>
+
+@functions {
+    string TrangThaiText(TrangThaiDangKy value) => value switch
+    {
+        TrangThaiDangKy.ChoDuyet => "Chờ duyệt",
+        TrangThaiDangKy.DaDuyet => "Đã duyệt",
+        TrangThaiDangKy.DaDangKy => "Đã đăng ký",
+        TrangThaiDangKy.TuChoi => "Từ chối",
+        TrangThaiDangKy.DaHuy => "Đã hủy",
+        _ => value.ToString()
+    };
+}
 
 @section Scripts {
     <script src="~/js/hocvuot.js" asp-append-version="true"></script>

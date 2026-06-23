@@ -10,10 +10,12 @@
 </head>
 <body>
     <header class="site-header">
-        <nav class="navbar navbar-expand-lg navbar-light bg-white">
+        <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container">
                 <a class="navbar-brand sims-brand" asp-controller="Home" asp-action="Index"><span><i class="bi bi-mortarboard-fill"></i></span> SIMS</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"><span class="navbar-toggler-icon"></span></button>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Mở menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
                         <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
@@ -33,7 +35,12 @@
         </nav>
     </header>
     <main>@RenderBody()</main>
-    <footer class="site-footer"><div class="container d-flex flex-wrap justify-content-between gap-2"><span>© 2026 SIMS - Hệ thống quản lý sinh viên</span><span>StudentHub</span></div></footer>
+    <footer class="site-footer">
+        <div class="container d-flex flex-wrap justify-content-between gap-2">
+            <span>© 2026 SIMS - Hệ thống quản lý sinh viên</span>
+            <span>StudentHub</span>
+        </div>
+    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

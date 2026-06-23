@@ -1,7 +1,7 @@
 @model SinhVienGoiYHocVuotPageViewModel
 @{
     Layout = "~/Views/Shared/_SinhVienLayout.cshtml";
-    ViewData["Title"] = "Goi y hoc vuot";
+    ViewData["Title"] = "Gợi ý học vượt";
 }
 
 @section Styles {
@@ -10,13 +10,13 @@
 
 <div class="page-heading">
     <div>
-        <span class="page-eyebrow">GOI Y HOC VUOT</span>
-        <h1>Mon hoc vuot phu hop</h1>
-        <p>Goi y dua tren GPA, mon tien quyet, lich hoc, lop con cho va gioi han 5 mon.</p>
+        <span class="page-eyebrow">GỢI Ý HỌC VƯỢT</span>
+        <h1>Môn học vượt phù hợp</h1>
+        <p>Gợi ý dựa trên GPA, môn tiên quyết, lịch học, lớp còn chỗ và giới hạn 5 môn.</p>
     </div>
     <form method="get" class="d-flex align-items-end gap-2">
         <div>
-            <label class="form-label small mb-1">Hoc ky</label>
+            <label class="form-label small mb-1">Học kỳ</label>
             <select class="form-select" name="hocKyNamHoc" onchange="this.form.querySelector('[name=hocKy]').value=this.selectedOptions[0].dataset.hocky;this.form.querySelector('[name=namHoc]').value=this.selectedOptions[0].dataset.namhoc">
                 @foreach (var option in Model.HocKyOptions)
                 {
@@ -32,16 +32,16 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-purple"><span class="stat-icon"><i class="bi bi-award"></i></span><div><small>GPA hien tai</small><strong>@Model.Gpa.ToString("0.00")</strong><span>thang diem 10</span></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-green"><span class="stat-icon"><i class="bi bi-check2-circle"></i></span><div><small>Mon da hoc dat</small><strong>@Model.SoMonDaHocDat</strong><span>mon hoc</span></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-orange"><span class="stat-icon"><i class="bi bi-speedometer2"></i></span><div><small>Hoc vuot da dang ky</small><strong>@Model.SoMonHocVuotDaDangKy/@Model.SoMonHocVuotToiDa</strong><span>@Model.HocKy - @Model.NamHoc</span></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-blue"><span class="stat-icon"><i class="bi bi-lightbulb"></i></span><div><small>Goi y phu hop</small><strong>@Model.GoiY.Count</strong><span>mon hoc</span></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-purple"><span class="stat-icon"><i class="bi bi-award"></i></span><div><small>GPA hiện tại</small><strong>@Model.Gpa.ToString("0.00")</strong><span>thang điểm 10</span></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-green"><span class="stat-icon"><i class="bi bi-check2-circle"></i></span><div><small>Môn đã học đạt</small><strong>@Model.SoMonDaHocDat</strong><span>môn học</span></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-orange"><span class="stat-icon"><i class="bi bi-speedometer2"></i></span><div><small>Học vượt đã đăng ký</small><strong>@Model.SoMonHocVuotDaDangKy/@Model.SoMonHocVuotToiDa</strong><span>@Model.HocKy - @Model.NamHoc</span></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="student-stat-card stat-blue"><span class="stat-icon"><i class="bi bi-lightbulb"></i></span><div><small>Gợi ý phù hợp</small><strong>@Model.GoiY.Count</strong><span>môn học</span></div></div></div>
 </div>
 
 @if (Model.DaDatGioiHan)
 {
     <div class="alert alert-danger border-0 shadow-sm" data-hocvuot-limit data-hocvuot-full="true">
-        <i class="bi bi-exclamation-triangle me-2"></i>Ban da dat gioi han @Model.SoMonHocVuotToiDa/@Model.SoMonHocVuotToiDa mon hoc vuot trong hoc ky nay.
+        <i class="bi bi-exclamation-triangle me-2"></i>Bạn đã đạt giới hạn @Model.SoMonHocVuotToiDa/@Model.SoMonHocVuotToiDa môn học vượt trong học kỳ này.
     </div>
 }
 
@@ -50,8 +50,8 @@
     <section class="student-panel">
         <div class="student-empty">
             <i class="bi bi-lightbulb"></i>
-            <strong>Chua co goi y hoc vuot phu hop.</strong>
-            <span>He thong se khong goi y neu GPA chua phu hop, thieu mon tien quyet, trung lich, lop day hoac da du 5 mon hoc vuot.</span>
+            <strong>Chưa có gợi ý học vượt phù hợp.</strong>
+            <span>Hệ thống sẽ không gợi ý nếu GPA chưa phù hợp, thiếu môn tiên quyết, trùng lịch, lớp đầy hoặc đã đủ 5 môn học vượt.</span>
         </div>
     </section>
 }
@@ -63,31 +63,41 @@ else
             <div class="col-lg-6 col-xxl-4">
                 <article class="student-panel hocvuot-suggestion-card h-100">
                     <div class="hocvuot-card-head">
-                        <span class="badge @MucDoBadge(item.MucDoGoiY)">@item.MucDoGoiY</span>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge @MucDoBadge(item.MucDoGoiY)">@MucDoText(item.MucDoGoiY)</span>
+                            @if (item.DaDangKy)
+                            {
+                                <span class="badge text-bg-success">Đã đăng ký</span>
+                            }
+                            else if (item.DaDatGioiHan)
+                            {
+                                <span class="badge text-bg-danger">Đã đạt giới hạn</span>
+                            }
+                        </div>
                         <span class="class-code">@item.MaLop</span>
                     </div>
                     <h2>@item.TenMonHoc</h2>
-                    <p class="text-muted mb-2">@item.MaMonHoc · @item.SoTinChi tin chi</p>
+                    <p class="text-muted mb-2">@item.MaMonHoc - @item.SoTinChi tín chỉ</p>
                     <div class="hocvuot-card-meta">
                         <span><i class="bi bi-person-workspace"></i> @item.GiangVien</span>
                         <span><i class="bi bi-calendar-week"></i> @item.LichHoc</span>
                     </div>
                     <div class="mt-3">
-                        <div class="d-flex justify-content-between small fw-semibold mb-1"><span>Diem phu hop</span><span>@item.DiemPhuHop.ToString("0.#")/100</span></div>
+                        <div class="d-flex justify-content-between small fw-semibold mb-1"><span>Điểm phù hợp</span><span>@item.DiemPhuHop.ToString("0.#")/100</span></div>
                         <div class="progress hocvuot-score-progress"><div class="progress-bar @ProgressClass(item.MucDoGoiY)" style="width:@((int)item.DiemPhuHop)%"></div></div>
                     </div>
                     <p class="hocvuot-reason">@item.LyDoGoiY</p>
                     <div class="d-flex gap-2 mt-auto">
-                        <form action="/SinhVien/GoiYHocVuot/DangKy/@item.Id" method="post" class="flex-fill" data-hocvuot-confirm="Dang ky lop @item.MaLop?">
+                        <form action="/SinhVien/GoiYHocVuot/DangKy/@item.Id" method="post" class="flex-fill" data-hocvuot-confirm="Đăng ký lớp @item.MaLop?">
                             @Html.AntiForgeryToken()
-                            <button class="btn btn-primary w-100" disabled="@(Model.DaDatGioiHan || item.DaDatGioiHan || item.TrangThai == TrangThaiGoiY.DaDangKy)">
-                                <i class="bi bi-plus-circle"></i> Dang ky
+                            <button class="btn btn-primary w-100" disabled="@(!item.CoTheDangKy)" title="@item.LyDoKhongTheDangKy">
+                                <i class="bi bi-plus-circle"></i> Đăng ký
                             </button>
                         </form>
-                        <form action="/SinhVien/GoiYHocVuot/BoQua/@item.Id" method="post" class="flex-fill" data-hocvuot-confirm="Bo qua goi y nay?">
+                        <form action="/SinhVien/GoiYHocVuot/BoQua/@item.Id" method="post" class="flex-fill" data-hocvuot-confirm="Bỏ qua gợi ý này?">
                             @Html.AntiForgeryToken()
-                            <button class="btn btn-outline-secondary w-100" disabled="@(item.TrangThai == TrangThaiGoiY.DaDangKy)">
-                                <i class="bi bi-x-circle"></i> Bo qua
+                            <button class="btn btn-outline-secondary w-100" disabled="@item.DaDangKy">
+                                <i class="bi bi-x-circle"></i> Bỏ qua
                             </button>
                         </form>
                     </div>
@@ -104,6 +114,15 @@ else
         MucDoGoiY.PhuHop => "text-bg-primary",
         MucDoGoiY.CanCanNhac => "text-bg-warning",
         _ => "text-bg-danger"
+    };
+
+    string MucDoText(MucDoGoiY value) => value switch
+    {
+        MucDoGoiY.RatPhuHop => "Rất phù hợp",
+        MucDoGoiY.PhuHop => "Phù hợp",
+        MucDoGoiY.CanCanNhac => "Cần cân nhắc",
+        MucDoGoiY.KhongPhuHop => "Không phù hợp",
+        _ => value.ToString()
     };
 
     string ProgressClass(MucDoGoiY value) => value switch

@@ -8,13 +8,16 @@ public enum TrangThaiTaiKhoan { HoatDong, Khoa }
 public enum TrangThaiSinhVien { DangHoc, BaoLuu, DaTotNghiep, ThoiHoc }
 public enum GioiTinh { Nam, Nu, Khac }
 public enum TrangThaiLopHoc { SapMo, DangHoc, DaKetThuc, DaHuy }
-public enum TrangThaiDangKy { ChoDuyet, DaDuyet, TuChoi, DaHuy }
+public enum TrangThaiDangKy { ChoDuyet, DaDuyet, DaDangKy, TuChoi, DaHuy }
 public enum TrangThaiDiemDanh { CoMat, DiMuon, Vang, CoPhep }
 public enum LoaiCanhBao { ChuyenCanThap, DiemThap, TrungLichHoc, ThieuDiem }
 public enum MucDo { ThongTin, CanhBao, NguyHiem }
 public enum MucDoTienQuyet { BatBuoc, KhuyenNghi, NenHocTruoc }
 public enum MucDoGoiY { RatPhuHop, PhuHop, CanCanNhac, KhongPhuHop }
 public enum TrangThaiGoiY { Moi, DaXem, DaDangKy, DaBoQua, HetHan }
+public enum LoaiFileNhap { Xlsx, Txt, Docx }
+public enum LoaiDuLieuNhap { SinhVien, GiangVien, MonHoc, LopHoc, DangKyHoc, BangDiem, DiemDanh }
+public enum TrangThaiNhapDuLieu { DangKiemTra, ChoXacNhan, DaNhap, ThatBai, DaHuy }
 
 public class TaiKhoan
 {
@@ -220,5 +223,48 @@ public class CanhBaoSinhVien
     [Required, StringLength(500)] public string NoiDung { get; set; } = "";
     [Required] public MucDo MucDo { get; set; }
     public bool DaDoc { get; set; }
+    public DateTime NgayTao { get; set; } = DateTime.Now;
+}
+
+public class LichSuNhapDuLieu
+{
+    public int Id { get; set; }
+    [Required] public int TaiKhoanId { get; set; }
+    public TaiKhoan? TaiKhoan { get; set; }
+    [Required, StringLength(255)] public string TenFile { get; set; } = "";
+    [Required] public LoaiFileNhap LoaiFile { get; set; }
+    [Required] public LoaiDuLieuNhap LoaiDuLieu { get; set; }
+    public int TongSoDong { get; set; }
+    public int SoDongHopLe { get; set; }
+    public int SoDongLoi { get; set; }
+    public int SoDongDaNhap { get; set; }
+    [Required] public TrangThaiNhapDuLieu TrangThai { get; set; } = TrangThaiNhapDuLieu.DangKiemTra;
+    public DateTime NgayNhap { get; set; } = DateTime.Now;
+    [StringLength(1000)] public string? GhiChu { get; set; }
+    public ICollection<LoiNhapDuLieu> LoiNhapDuLieu { get; set; } = [];
+    public ICollection<DuLieuNhapTam> DuLieuNhapTam { get; set; } = [];
+}
+
+public class LoiNhapDuLieu
+{
+    public int Id { get; set; }
+    [Required] public int LichSuNhapDuLieuId { get; set; }
+    public LichSuNhapDuLieu? LichSuNhapDuLieu { get; set; }
+    public int SoDong { get; set; }
+    [Required] public string NoiDungDong { get; set; } = "";
+    [Required] public string NoiDungLoi { get; set; } = "";
+    public DateTime NgayTao { get; set; } = DateTime.Now;
+}
+
+public class DuLieuNhapTam
+{
+    public int Id { get; set; }
+    [Required] public int LichSuNhapDuLieuId { get; set; }
+    public LichSuNhapDuLieu? LichSuNhapDuLieu { get; set; }
+    public int SoDong { get; set; }
+    [Required] public LoaiDuLieuNhap LoaiDuLieu { get; set; }
+    [Required] public string NoiDungJson { get; set; } = "";
+    public bool HopLe { get; set; }
+    public string? NoiDungLoi { get; set; }
     public DateTime NgayTao { get; set; } = DateTime.Now;
 }

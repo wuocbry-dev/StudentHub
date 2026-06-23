@@ -26,6 +26,9 @@ public class GoiYHocVuotViewModel
     public TrangThaiGoiY TrangThai { get; set; }
     public DateTime NgayTao { get; set; }
     public bool DaDatGioiHan { get; set; }
+    public bool DaDangKy { get; set; }
+    public bool CoTheDangKy { get; set; } = true;
+    public string LyDoKhongTheDangKy { get; set; } = "";
 }
 
 public class SinhVienGoiYHocVuotPageViewModel

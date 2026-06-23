@@ -7,11 +7,11 @@
     registerButton?.addEventListener('click', () => {
         Swal.fire({
             icon: isFull ? 'error' : 'info',
-            title: isFull ? 'Da dat gioi han hoc vuot' : 'Dang ky hoc vuot',
+            title: isFull ? 'Đã đạt giới hạn học vượt' : 'Đăng ký học vượt',
             text: isFull
-                ? 'Ban da dat gioi han 5/5 mon hoc vuot trong hoc ky nay.'
-                : 'Chuc nang dang ky se tiep tuc kiem tra gioi han hoc vuot o server-side.',
-            confirmButtonText: 'Da hieu',
+                ? 'Bạn đã đạt giới hạn 5/5 môn học vượt trong học kỳ này.'
+                : 'Chức năng đăng ký sẽ tiếp tục kiểm tra giới hạn học vượt ở server-side.',
+            confirmButtonText: 'Đã hiểu',
             confirmButtonColor: '#2563eb'
         });
     });
@@ -19,9 +19,9 @@
     if (limitPanel && isFull) {
         Swal.fire({
             icon: 'warning',
-            title: 'Gioi han hoc vuot',
-            text: 'Ban da dat gioi han 5/5 mon hoc vuot trong hoc ky nay.',
-            confirmButtonText: 'Da hieu',
+            title: 'Giới hạn học vượt',
+            text: 'Bạn đã đạt giới hạn 5/5 môn học vượt trong học kỳ này.',
+            confirmButtonText: 'Đã hiểu',
             confirmButtonColor: '#2563eb'
         });
     }
@@ -32,10 +32,10 @@
             event.preventDefault();
             Swal.fire({
                 icon: 'question',
-                title: form.dataset.hocvuotConfirm || 'Xac nhan thao tac?',
+                title: form.dataset.hocvuotConfirm || 'Xác nhận thao tác?',
                 showCancelButton: true,
-                confirmButtonText: 'Xac nhan',
-                cancelButtonText: 'Huy',
+                confirmButtonText: 'Xác nhận',
+                cancelButtonText: 'Hủy',
                 confirmButtonColor: '#2563eb'
             }).then(result => {
                 if (!result.isConfirmed) return;
@@ -43,7 +43,7 @@
                 const loadingButton = form.querySelector('[data-hocvuot-loading]');
                 if (loadingButton) {
                     loadingButton.disabled = true;
-                    loadingButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Dang xu ly';
+                    loadingButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang xử lý';
                 }
                 form.requestSubmit();
             });
@@ -54,7 +54,7 @@
         ['#monHocTienQuyetTable', '#goiYHocVuotTable'].forEach(selector => {
             const table = document.querySelector(selector);
             if (!table || table.querySelector('tbody td[colspan]')) return;
-            new DataTable(selector, { pageLength: 10, language: { search: 'Tim kiem:', lengthMenu: 'Hien _MENU_ dong', info: 'Hien _START_ den _END_ / _TOTAL_', paginate: { previous: 'Truoc', next: 'Sau' } } });
+            new DataTable(selector, { pageLength: 10, language: { search: 'Tìm kiếm:', lengthMenu: 'Hiện _MENU_ dòng', info: 'Hiện _START_ đến _END_ / _TOTAL_', paginate: { previous: 'Trước', next: 'Sau' } } });
         });
     }
 })();
