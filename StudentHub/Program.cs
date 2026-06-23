@@ -19,6 +19,7 @@ namespace StudentHub
             builder.Services.AddScoped<IGioiHanHocVuotService, GioiHanHocVuotService>();
             builder.Services.AddScoped<IGoiYHocVuotService, GoiYHocVuotService>();
             builder.Services.AddScoped<IDangKyHocVuotService, DangKyHocVuotService>();
+            builder.Services.AddScoped<IHuyDangKyHocService, HuyDangKyHocService>();
             builder.Services.AddScoped<IFileImportService, FileImportService>();
             builder.Services.AddScoped<ExcelImportReader>();
             builder.Services.AddScoped<TxtImportReader>();

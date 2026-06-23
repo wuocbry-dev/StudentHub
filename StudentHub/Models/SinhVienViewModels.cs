@@ -153,9 +153,25 @@ public class SinhVienHocVuotHocKyOptionViewModel
 
 public class SinhVienHocVuotItemViewModel
 {
+    public int DangKyHocId { get; set; }
+    public int LopHocId { get; set; }
     public string MaLop { get; set; } = "";
     public string TenLop { get; set; } = "";
+    public string MaMonHoc { get; set; } = "";
     public string TenMonHoc { get; set; } = "";
+    public int SoTinChi { get; set; }
+    public string GiangVien { get; set; } = "";
+    public string LichHocText { get; set; } = "";
+    public string HocKy { get; set; } = "";
+    public string NamHoc { get; set; } = "";
     public DateTime NgayDangKy { get; set; }
+    public DateTime? NgayBatDau { get; set; }
+    public DateTime? HanHuyDangKy { get; set; }
+    public bool ConDuocHuy { get; set; }
+    public bool ConDuocDangKyLai { get; set; }
+    public int? SoNgayConLai { get; set; }
+    public bool LaHocVuot { get; set; }
     public TrangThaiDangKy TrangThai { get; set; }
+    public string LyDoKhongTheHuy { get; set; } = "";
+    public string LyDoKhongTheDangKyLai { get; set; } = "";
 }

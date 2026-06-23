@@ -14,7 +14,7 @@ namespace StudentHub.Controllers;
 [Route("SinhVien")]
 public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoService,
     IGioiHanHocVuotService gioiHanHocVuotService, IGoiYHocVuotService goiYHocVuotService,
-    IDangKyHocVuotService dangKyHocVuotService) : Controller
+    IDangKyHocVuotService dangKyHocVuotService, IHuyDangKyHocService huyDangKyHocService) : Controller
 {
     [HttpGet("")]
     public IActionResult Index() => RedirectToAction(nameof(Dashboard));
@@ -306,25 +306,7 @@ public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoSe
 
         var soDaDangKy = await gioiHanHocVuotService.LaySoMonHocVuotDaDangKyAsync(sinhVien.Id, hocKy, namHoc);
         var soToiDa = await gioiHanHocVuotService.LaySoMonHocVuotToiDaAsync(hocKy, namHoc);
-        var dangKyHocVuot = await db.DangKyHoc.AsNoTracking()
-            .Where(x => x.SinhVienId == sinhVien.Id
-                && x.LaHocVuot
-                && x.HocKy.Trim() == hocKy
-                && x.NamHoc.Trim() == namHoc
-                && x.TrangThai != TrangThaiDangKy.DaHuy
-                && x.TrangThai != TrangThaiDangKy.TuChoi)
-            .Include(x => x.LopHoc).ThenInclude(x => x!.MonHoc)
-            .Include(x => x.LopHoc).ThenInclude(x => x!.GiangVien)
-            .OrderByDescending(x => x.NgayDangKy)
-            .Select(x => new SinhVienHocVuotItemViewModel
-            {
-                MaLop = x.LopHoc!.MaLop,
-                TenLop = x.LopHoc.TenLop,
-                TenMonHoc = x.LopHoc.MonHoc!.TenMonHoc,
-                NgayDangKy = x.NgayDangKy,
-                TrangThai = x.TrangThai
-            })
-            .ToListAsync();
+        var dangKyHocVuot = await huyDangKyHocService.LayDangKyHocVuotCuaSinhVienAsync(sinhVien.Id, hocKy, namHoc);
 
         return View(new SinhVienHocVuotViewModel
         {
@@ -356,6 +338,26 @@ public class SinhVienController(SimsDbContext db, CanhBaoHocTapService canhBaoSe
         if (sinhVienId == null) return Forbid();
 
         var result = await dangKyHocVuotService.DangKyHocVuotAsync(sinhVienId.Value, lopHocId, hocKy, namHoc);
+        return result.ThanhCong ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpPost("HocVuot/HuyDangKy"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> HuyDangKyHoc(int dangKyHocId, string? lyDoHuy = null)
+    {
+        var sinhVienId = await GetSinhVien().Select(x => (int?)x.Id).SingleOrDefaultAsync();
+        if (sinhVienId == null) return Forbid();
+
+        var result = await huyDangKyHocService.HuyDangKyAsync(sinhVienId.Value, dangKyHocId, lyDoHuy);
+        return result.ThanhCong ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpPost("HocVuot/DangKyLai"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> DangKyLaiMonHoc(int dangKyHocId)
+    {
+        var sinhVienId = await GetSinhVien().Select(x => (int?)x.Id).SingleOrDefaultAsync();
+        if (sinhVienId == null) return Forbid();
+
+        var result = await huyDangKyHocService.DangKyLaiAsync(sinhVienId.Value, dangKyHocId);
         return result.ThanhCong ? Ok(result) : BadRequest(result);
     }
 

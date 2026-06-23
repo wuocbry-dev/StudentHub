@@ -159,6 +159,74 @@
         }
     };
 
+    const postDangKyAction = async (url, dangKyHocId, extra = {}) => {
+        const formData = new FormData();
+        formData.append('dangKyHocId', dangKyHocId);
+        Object.entries(extra).forEach(([key, value]) => formData.append(key, value ?? ''));
+        if (tokenInput) formData.append('__RequestVerificationToken', tokenInput.value);
+
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        if (!response.ok || !data.thanhCong) throw new Error(data.thongBao || 'Không thể thực hiện thao tác.');
+        return data;
+    };
+
+    const cancelRegistration = async (button) => {
+        const confirm = await showAlert({
+            icon: 'warning',
+            title: `Hủy đăng ký lớp ${button.dataset.name}?`,
+            input: 'textarea',
+            inputPlaceholder: 'Lý do hủy (không bắt buộc)',
+            showCancelButton: true,
+            confirmButtonText: 'Hủy đăng ký',
+            cancelButtonText: 'Đóng',
+            confirmButtonColor: '#dc2626'
+        });
+        if (!confirm.isConfirmed) return;
+
+        const original = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang xử lý';
+        try {
+            const data = await postDangKyAction(registerButton.dataset.hocvuotCancelUrl, button.dataset.id, { lyDoHuy: confirm.value || '' });
+            await showAlert({ icon: 'success', title: 'Đã hủy đăng ký', text: data.thongBao });
+            window.location.reload();
+        } catch (error) {
+            button.disabled = false;
+            button.innerHTML = original;
+            showAlert({ icon: 'error', title: 'Không thể hủy đăng ký', text: error.message });
+        }
+    };
+
+    const reregisterCourse = async (button) => {
+        const confirm = await showAlert({
+            icon: 'question',
+            title: `Đăng ký lại lớp ${button.dataset.name}?`,
+            text: 'Hệ thống sẽ kiểm tra lại thời hạn, chỗ trống, lịch học và giới hạn học vượt trước khi lưu.',
+            showCancelButton: true,
+            confirmButtonText: 'Đăng ký lại',
+            cancelButtonText: 'Hủy'
+        });
+        if (!confirm.isConfirmed) return;
+
+        const original = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang xử lý';
+        try {
+            const data = await postDangKyAction(registerButton.dataset.hocvuotReregisterUrl, button.dataset.id);
+            await showAlert({ icon: 'success', title: 'Đăng ký lại thành công', text: data.thongBao });
+            window.location.reload();
+        } catch (error) {
+            button.disabled = false;
+            button.innerHTML = original;
+            showAlert({ icon: 'error', title: 'Không thể đăng ký lại', text: error.message });
+        }
+    };
+
     registerButton?.addEventListener('click', () => {
         if (isFull) {
             showAlert({
@@ -180,6 +248,17 @@
         const button = event.target.closest('[data-hocvuot-submit]');
         if (!button) return;
         submitRegistration(button);
+    });
+
+    document.addEventListener('click', event => {
+        const cancelButton = event.target.closest('[data-hocvuot-cancel]');
+        if (cancelButton) {
+            cancelRegistration(cancelButton);
+            return;
+        }
+
+        const reregisterButton = event.target.closest('[data-hocvuot-reregister]');
+        if (reregisterButton) reregisterCourse(reregisterButton);
     });
 
     document.querySelectorAll('form[data-hocvuot-confirm]').forEach(form => {

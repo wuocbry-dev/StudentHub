@@ -120,3 +120,12 @@ public class KetQuaDangKyHocVuotViewModel
     public int SoMonHocVuotDaDangKy { get; set; }
     public int SoMonHocVuotToiDa { get; set; }
 }
+
+public class KetQuaThaoTacDangKyViewModel
+{
+    public bool ThanhCong { get; set; }
+    public string ThongBao { get; set; } = "";
+    public string TrangThaiMoi { get; set; } = "";
+    public int SoMonHocVuotDaDangKy { get; set; }
+    public int SoMonHocVuotToiDa { get; set; }
+}
