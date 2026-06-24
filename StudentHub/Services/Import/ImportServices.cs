@@ -136,6 +136,7 @@ public class ImportValidationService(SimsDbContext db, IGioiHanHocVuotService gi
             LoaiDuLieuNhap.SinhVien => await ValidateSinhVienAsync(readResult.Rows),
             LoaiDuLieuNhap.DangKyHoc => await ValidateDangKyHocAsync(readResult.Rows),
             LoaiDuLieuNhap.BangDiem => await ValidateBangDiemAsync(readResult.Rows),
+            LoaiDuLieuNhap.LopHoc => await ValidateLopHocAsync(readResult.Rows),
             _ => readResult.Rows.Select(x => new ImportValidationRow(x.SoDong, x.Values, false, "Loai du lieu nay chua duoc ho tro trong MVP.")).ToList()
         };
     }
@@ -252,6 +253,38 @@ public class ImportValidationService(SimsDbContext db, IGioiHanHocVuotService gi
         return result;
     }
 
+    private async Task<List<ImportValidationRow>> ValidateLopHocAsync(List<ImportRawRow> rows)
+    {
+        var result = new List<ImportValidationRow>();
+        var monHocs = await db.MonHoc.AsNoTracking().ToDictionaryAsync(x => x.MaMonHoc);
+        var giangViens = await db.GiangVien.AsNoTracking().ToDictionaryAsync(x => x.MaGiangVien);
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var row in rows)
+        {
+            var errors = new List<string>();
+            var maLop = Value(row, "MaLop").ToUpperInvariant();
+            var maMonHoc = Value(row, "MaMonHoc").ToUpperInvariant();
+            var maGiangVien = Value(row, "MaGiangVien").ToUpperInvariant();
+
+            if (string.IsNullOrWhiteSpace(maLop)) errors.Add("MaLop khong duoc trong.");
+            if (string.IsNullOrWhiteSpace(Value(row, "TenLop"))) errors.Add("TenLop khong duoc trong.");
+            if (string.IsNullOrWhiteSpace(maMonHoc)) errors.Add("MaMonHoc khong duoc trong.");
+            else if (!monHocs.ContainsKey(maMonHoc)) errors.Add("MaMonHoc khong ton tai.");
+            if (string.IsNullOrWhiteSpace(maGiangVien)) errors.Add("MaGiangVien khong duoc trong.");
+            else if (!giangViens.ContainsKey(maGiangVien)) errors.Add("MaGiangVien khong ton tai.");
+            if (string.IsNullOrWhiteSpace(Value(row, "HocKy"))) errors.Add("HocKy khong duoc trong.");
+            if (string.IsNullOrWhiteSpace(Value(row, "NamHoc"))) errors.Add("NamHoc khong duoc trong.");
+            if (!int.TryParse(Value(row, "SoLuongToiDa"), out var soLuong) || soLuong <= 0) errors.Add("SoLuongToiDa phai la so duong.");
+            if (!Enum.TryParse<TrangThaiLopHoc>(Value(row, "TrangThai"), true, out _)) errors.Add("TrangThai khong hop le.");
+            if (!seen.Add(maLop)) errors.Add("MaLop bi trung trong file.");
+
+            result.Add(new ImportValidationRow(row.SoDong, row.Values, errors.Count == 0, string.Join(" ", errors)));
+        }
+
+        return result;
+    }
+
     private static string Value(ImportRawRow row, string key) => row.Values.TryGetValue(key, out var value) ? value.Trim() : "";
 }
 
@@ -264,6 +297,7 @@ public class ImportSaveService(SimsDbContext db, IGioiHanHocVuotService gioiHanH
             LoaiDuLieuNhap.SinhVien => await SaveSinhVienAsync(rows),
             LoaiDuLieuNhap.DangKyHoc => await SaveDangKyHocAsync(rows),
             LoaiDuLieuNhap.BangDiem => await SaveBangDiemAsync(rows),
+            LoaiDuLieuNhap.LopHoc => await SaveLopHocAsync(rows),
             _ => throw new InvalidOperationException("Loai du lieu nay chua duoc ho tro luu trong MVP.")
         };
     }
@@ -380,6 +414,32 @@ public class ImportSaveService(SimsDbContext db, IGioiHanHocVuotService gioiHanH
             bangDiem.DiemTongKet = tongKet;
             bangDiem.DiemChu = tongKet >= 8.5m ? "A" : tongKet >= 7m ? "B" : tongKet >= 5.5m ? "C" : tongKet >= 4m ? "D" : "F";
             bangDiem.NgayCapNhat = DateTime.Now;
+            imported++;
+        }
+        await db.SaveChangesAsync();
+        return imported;
+    }
+
+    private async Task<int> SaveLopHocAsync(List<DuLieuNhapTam> rows)
+    {
+        var imported = 0;
+        foreach (var row in rows)
+        {
+            var values = JsonSerializer.Deserialize<Dictionary<string, string>>(row.NoiDungJson) ?? [];
+            var monHoc = await db.MonHoc.SingleAsync(x => x.MaMonHoc == values["MaMonHoc"].Trim().ToUpper());
+            var giangVien = await db.GiangVien.SingleAsync(x => x.MaGiangVien == values["MaGiangVien"].Trim().ToUpper());
+
+            db.LopHoc.Add(new LopHoc
+            {
+                MaLop = values["MaLop"].Trim().ToUpperInvariant(),
+                TenLop = values["TenLop"].Trim(),
+                MonHocId = monHoc.Id,
+                GiangVienId = giangVien.Id,
+                HocKy = values["HocKy"].Trim(),
+                NamHoc = values["NamHoc"].Trim(),
+                SoLuongToiDa = int.Parse(values["SoLuongToiDa"]),
+                TrangThai = Enum.Parse<TrangThaiLopHoc>(values["TrangThai"], true)
+            });
             imported++;
         }
         await db.SaveChangesAsync();
