@@ -169,17 +169,17 @@
                             }
                             <div class="mt-1"><span class="badge @HanBadge(item)">@HanBadgeText(item)</span></div>
                         </td>
-                        <td><span class="badge @TrangThaiBadge(item.TrangThai)">@TrangThaiText(item.TrangThai)</span></td>
+                        <td><span class="hocvuot-status-chip @TrangThaiBadge(item.TrangThai)">@TrangThaiText(item.TrangThai)</span></td>
                         <td>
                             @if (item.TrangThai == TrangThaiDangKy.DaHuy)
                             {
-                                <button type="button" class="btn btn-sm btn-success" data-hocvuot-reregister data-id="@item.DangKyHocId" data-name="@item.MaLop" disabled="@(!item.ConDuocDangKyLai)" title="@item.LyDoKhongTheDangKyLai">
+                                <button type="button" class="btn btn-sm btn-success" data-hocvuot-reregister data-id="@item.DangKyHocId" data-name="@item.MaLop" data-can-action="@item.ConDuocDangKyLai.ToString().ToLowerInvariant()" data-blocked-reason="@item.LyDoKhongTheDangKyLai" aria-disabled="@(!item.ConDuocDangKyLai).ToString().ToLowerInvariant()" title="@item.LyDoKhongTheDangKyLai">
                                     <i class="bi bi-arrow-repeat"></i> Đăng ký lại
                                 </button>
                             }
                             else
                             {
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-hocvuot-cancel data-id="@item.DangKyHocId" data-name="@item.MaLop" disabled="@(!item.ConDuocHuy)" title="@item.LyDoKhongTheHuy">
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-hocvuot-cancel data-id="@item.DangKyHocId" data-name="@item.MaLop" data-can-action="@item.ConDuocHuy.ToString().ToLowerInvariant()" data-blocked-reason="@item.LyDoKhongTheHuy" aria-disabled="@(!item.ConDuocHuy).ToString().ToLowerInvariant()" title="@item.LyDoKhongTheHuy">
                                     <i class="bi bi-x-circle"></i> Hủy đăng ký
                                 </button>
                             }
@@ -205,11 +205,11 @@
 
     string TrangThaiBadge(TrangThaiDangKy value) => value switch
     {
-        TrangThaiDangKy.DaHuy => "text-bg-secondary",
-        TrangThaiDangKy.DaDuyet or TrangThaiDangKy.DaDangKy => "text-bg-primary",
-        TrangThaiDangKy.ChoDuyet => "text-bg-info",
-        TrangThaiDangKy.TuChoi => "text-bg-danger",
-        _ => "text-bg-secondary"
+        TrangThaiDangKy.DaHuy => "is-cancelled",
+        TrangThaiDangKy.DaDuyet or TrangThaiDangKy.DaDangKy => "is-approved",
+        TrangThaiDangKy.ChoDuyet => "is-pending",
+        TrangThaiDangKy.TuChoi => "is-rejected",
+        _ => "is-muted"
     };
 
     string HanText(SinhVienHocVuotItemViewModel item)
